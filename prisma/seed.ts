@@ -16,12 +16,14 @@ async function main() {
   for (const unit of units) await db.unit.upsert({ where: { slug: unit.slug }, update: {}, create: unit });
   const { ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_NAME } = process.env;
   if (ADMIN_EMAIL && ADMIN_PASSWORD) {
-    if (ADMIN_PASSWORD.length < 10) throw new Error("ADMIN_PASSWORD must be at least 10 characters");
+    if (ADMIN_PASSWORD.length < 8) throw new Error("ADMIN_PASSWORD must be at least 8 characters");
     const email = ADMIN_EMAIL.trim().toLowerCase();
+    const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12);
     await db.user.upsert({
       where: { email },
-      update: {},
-      create: { email, name: ADMIN_NAME || "Administrator", role: "SUPER_ADMIN", passwordHash: await bcrypt.hash(ADMIN_PASSWORD, 12) },
+      // Re-running the seed resets this account to the .env password and to super admin.
+      update: { role: "SUPER_ADMIN", passwordHash },
+      create: { email, name: ADMIN_NAME || "Administrator", role: "SUPER_ADMIN", passwordHash },
     });
     console.log(`Admin ready: ${email}`);
   } else {
