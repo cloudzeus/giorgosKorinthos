@@ -65,6 +65,12 @@ enum ActivityType {
   EMAIL
 }
 
+enum ExtraPricing {
+  PER_STAY
+  PER_NIGHT
+  PER_PERSON
+}
+
 enum MediaKind {
   IMAGE
   VIDEO
@@ -99,6 +105,44 @@ model Unit {
   reservations ReservationUnit[]
   rates        RatePeriod[]
   tickets      Ticket[]
+  extras       Extra[]
+}
+
+/// An optional paid service a guest can add to a booking (transfer, private chef, ...), offered by one or both villas.
+model Extra {
+  id           String       @id @default(cuid())
+  active       Boolean      @default(true)
+  sort         Int          @default(0)
+  priceCents   Int
+  pricing      ExtraPricing @default(PER_STAY)
+  photos       String[] // image URLs from the media library
+  createdAt    DateTime     @default(now())
+  units        Unit[]
+  translations ExtraTranslation[]
+  bookings     ReservationExtra[]
+}
+
+model ExtraTranslation {
+  extraId     String
+  locale      String
+  name        String
+  description String @db.Text
+  extra       Extra  @relation(fields: [extraId], references: [id], onDelete: Cascade)
+
+  @@id([extraId, locale])
+}
+
+/// An extra as it was sold with a reservation: name and amount are a snapshot.
+model ReservationExtra {
+  id            String      @id @default(cuid())
+  reservationId String
+  extraId       String?
+  name          String
+  priceCents    Int
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  extra         Extra?      @relation(fields: [extraId], references: [id], onDelete: SetNull)
+
+  @@index([reservationId])
 }
 
 /// Seasonal price for a villa. A night inside the period costs priceCents instead of the villa's base price.
@@ -224,6 +268,7 @@ model Reservation {
   units             ReservationUnit[]
   payments          Payment[]
   tickets           Ticket[]
+  extras            ReservationExtra[]
 
   @@index([checkIn, checkOut])
   @@index([status])

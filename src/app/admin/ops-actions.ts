@@ -14,7 +14,7 @@ import { FIELDS, saveSettings } from "@/lib/settings";
 
 const euros = (value: FormDataEntryValue | null) => Math.round(Number(String(value ?? "").replace(",", ".")) * 100);
 const text = (value: FormDataEntryValue | null, max = 2000) => String(value ?? "").trim().slice(0, max);
-const full = (id: string) => db.reservation.findUniqueOrThrow({ where: { id }, include: { units: { include: { unit: true } }, payments: true } });
+const full = (id: string) => db.reservation.findUniqueOrThrow({ where: { id }, include: { units: { include: { unit: true } }, payments: true, extras: true } });
 const paid = (reservation: { payments: { amountCents: number }[] }) => reservation.payments.reduce((sum, row) => sum + row.amountCents, 0);
 
 // ── Reservation ───────────────────────────────────────────────
@@ -211,4 +211,52 @@ export async function saveIntegrationSettings(formData: FormData) {
   await audit(user.id, "settings.save", "Setting");
   revalidatePath("/", "layout");
   redirect("/admin/settings?ok=saved");
+}
+
+/** Drag and drop on the plan: move a stay to other dates or the other villa, or change its length. */
+export async function planMove(id: string, unitId: string, inDay: string, outDay: string): Promise<{ ok: boolean; message?: string }> {
+  const user = await requirePermission("reservations.write");
+  const checkIn = parseDay(inDay), checkOut = parseDay(outDay);
+  if (!checkIn || !checkOut || nightsBetween(checkIn, checkOut) < 1) return { ok: false, message: "Η διαμονή πρέπει να έχει τουλάχιστον μία βραδιά." };
+  const reservation = await db.reservation.findUnique({ where: { id }, include: { units: true } });
+  if (!reservation || reservation.status === "CANCELLED") return { ok: false, message: "Η κράτηση δεν βρέθηκε." };
+  if (reservation.units.length !== 1) return { ok: false, message: "Η κράτηση έχει δύο βίλες. Αλλάξτε την από την καρτέλα της." };
+  try {
+    // Blocked dates carry no price; real stays are re-priced for their new nights.
+    await rescheduleReservation(id, [unitId], checkIn, checkOut, reservation.status !== "BLOCKED");
+  } catch (error) {
+    if (error instanceof UnitsTakenError) return { ok: false, message: "Η βίλα είναι ήδη κλεισμένη σε αυτές τις ημερομηνίες. Δεν άλλαξε τίποτα." };
+    throw error;
+  }
+  await audit(user.id, "reservation.plan-move", "Reservation", id);
+  revalidatePath("/admin", "layout");
+  return { ok: true };
+}
+
+// ── Extra services ────────────────────────────────────────────
+export async function saveExtra(id: string | null, formData: FormData) {
+  const user = await requirePermission("rooms.write");
+  const price = euros(formData.get("price"));
+  const pricing = z.enum(["PER_STAY", "PER_NIGHT", "PER_PERSON"]).safeParse(formData.get("pricing"));
+  const unitIds = formData.getAll("unit").map(String);
+  const names = locales.map((locale) => ({ locale, name: text(formData.get(`${locale}.name`), 120), description: text(formData.get(`${locale}.description`), 2000) }));
+  // Greek is required; an empty English or German name falls back to the Greek one.
+  if (!names[0].name || !Number.isFinite(price) || price < 0 || !pricing.success || !unitIds.length) redirect("/admin/extras?error=form");
+  const translations = names.map((row) => ({ ...row, name: row.name || names[0].name, description: row.description || names[0].description }));
+  // Only pictures that exist in the media library can be attached.
+  const photos = (await db.mediaAsset.findMany({ where: { id: { in: formData.getAll("photo").map(String) }, kind: "IMAGE" }, select: { url: true } })).map((row) => row.url);
+  const data = { priceCents: price, pricing: pricing.data, active: formData.get("active") === "on", sort: Number(formData.get("sort")) || 0, photos };
+  const saved = id
+    ? await db.extra.update({ where: { id }, data: { ...data, units: { set: unitIds.map((unit) => ({ id: unit })) }, translations: { deleteMany: {}, create: translations } } })
+    : await db.extra.create({ data: { ...data, units: { connect: unitIds.map((unit) => ({ id: unit })) }, translations: { create: translations } } });
+  await audit(user.id, id ? "extra.update" : "extra.create", "Extra", saved.id);
+  revalidatePath("/", "layout");
+  redirect("/admin/extras?ok=saved");
+}
+
+export async function deleteExtra(id: string) {
+  const user = await requirePermission("rooms.write");
+  await db.extra.delete({ where: { id } }); // past reservations keep their snapshot of the name and amount
+  await audit(user.id, "extra.delete", "Extra", id);
+  revalidatePath("/", "layout");
 }

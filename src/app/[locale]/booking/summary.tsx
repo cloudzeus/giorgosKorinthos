@@ -18,9 +18,12 @@ export function SelectionSummary({ locale, depositPercent, guests, labels }: {
     if (!form) return;
     const read = () => {
       const picked = [...form.querySelectorAll<HTMLInputElement>('input[name="unit"]:checked')];
+      const villas = new Set(picked.map((input) => input.value));
+      // An extra counts only if one of the ticked villas offers it (the server applies the same rule).
+      const extras = [...form.querySelectorAll<HTMLInputElement>('input[name="extra"]:checked')].filter((input) => (input.dataset.units ?? "").split(" ").some((id) => villas.has(id)));
       setState({
         count: picked.length,
-        total: picked.reduce((sum, input) => sum + Number(input.dataset.total), 0),
+        total: [...picked, ...extras].reduce((sum, input) => sum + Number(input.dataset.total), 0),
         capacity: picked.reduce((sum, input) => sum + Number(input.dataset.capacity), 0),
       });
     };

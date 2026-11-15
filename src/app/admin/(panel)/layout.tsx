@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BedDouble, CalendarCheck, CalendarRange, ClipboardList, FileText, Images, LayoutDashboard, LogOut, Mail, Settings, Type, Users } from "lucide-react";
+import { BedDouble, ConciergeBell, CalendarCheck, CalendarRange, ClipboardList, FileText, Images, LayoutDashboard, LogOut, Mail, Settings, Type, Users } from "lucide-react";
 import { can, requirePermission } from "@/auth";
 import { LogoHorizontal } from "@/components/site/Logo";
 import { NavLink } from "@/components/admin/client";
@@ -21,6 +21,7 @@ export default async function PanelLayout({ children }: LayoutProps<"/admin">) {
           {can(user.role, "messages.read") ? <NavLink href="/admin/messages"><Mail aria-hidden="true" strokeWidth={1.5} /><span>Μηνύματα</span></NavLink> : null}
           {can(user.role, "ops.read") ? <NavLink href="/admin/ops"><ClipboardList aria-hidden="true" strokeWidth={1.5} /><span>Καθαριότητα και αιτήματα</span></NavLink> : null}
           {can(user.role, "reservations.read") ? <NavLink href="/admin/rooms"><BedDouble aria-hidden="true" strokeWidth={1.5} /><span>Βίλες και τιμές</span></NavLink> : null}
+          {can(user.role, "reservations.read") ? <NavLink href="/admin/extras"><ConciergeBell aria-hidden="true" strokeWidth={1.5} /><span>Έξτρα υπηρεσίες</span></NavLink> : null}
           {can(user.role, "cms.write") ? <NavLink href="/admin/site"><Type aria-hidden="true" strokeWidth={1.5} /><span>Κείμενα site</span></NavLink> : null}
           {can(user.role, "content.read") ? <NavLink href="/admin/content"><FileText aria-hidden="true" strokeWidth={1.5} /><span>Άρθρα</span></NavLink> : null}
           {can(user.role, "media.read") ? <NavLink href="/admin/media"><Images aria-hidden="true" strokeWidth={1.5} /><span>Βιβλιοθήκη μέσων</span></NavLink> : null}

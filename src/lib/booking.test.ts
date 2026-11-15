@@ -1,6 +1,6 @@
 // Run with: npm test
 import assert from "node:assert";
-import { depositOf, nightsBetween, parseDay, stayPrice, validStay } from "./booking";
+import { depositOf, extraTotal, nightsBetween, parseDay, stayPrice, validStay } from "./booking";
 
 assert.equal(parseDay("2026-02-30"), null, "impossible date");
 assert.equal(parseDay("1/2/2026"), null, "wrong format");
@@ -29,5 +29,9 @@ assert.deepEqual(stayPrice(10000, [], checkIn, checkOut), { totalCents: 30000, m
 assert.deepEqual(stayPrice(10000, rates, d("2026-06-29"), d("2026-07-02")), { totalCents: 10000 + 10000 + 15000, minNights: 1 }, "crosses into the season");
 assert.deepEqual(stayPrice(10000, rates, d("2026-07-01"), d("2026-07-05")), { totalCents: 15000 + 15000 + 20000 + 20000, minNights: 3 }, "later period wins on overlap");
 assert.deepEqual(stayPrice(10000, rates, d("2026-07-31"), d("2026-08-02")), { totalCents: 15000 + 10000, minNights: 3 }, "period end is inclusive");
+
+assert.equal(extraTotal(8000, "PER_STAY", 5, 4), 8000);
+assert.equal(extraTotal(8000, "PER_NIGHT", 5, 4), 40000);
+assert.equal(extraTotal(8000, "PER_PERSON", 5, 4), 32000);
 
 console.log("booking: ok");

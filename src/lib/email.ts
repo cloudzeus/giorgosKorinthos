@@ -70,7 +70,7 @@ export function renderText({ t, name, title, intro, rows = [], quote, cta }: Ema
   return [title, "", fmt(t.mail.greeting, { name }), intro, "", ...rows.map((row) => `${row.label}: ${row.value}`), ...(quote ? ["", `${quote.label}:`, quote.text] : []), ...(cta ? ["", `${cta.label}: ${cta.href}`] : []), "", t.mail.signoff, t.mail.team, "", t.mail.footer].join("\n");
 }
 
-type Booking = Reservation & { units: (ReservationUnit & { unit: Unit })[] };
+type Booking = Reservation & { units: (ReservationUnit & { unit: Unit })[]; extras?: { name: string }[] };
 export type BookingMail = "confirm" | "change" | "cancel";
 
 /** The content of a reservation message. `paidCents` is what the guest has paid so far. */
@@ -84,6 +84,7 @@ export async function bookingEmail(kind: BookingMail, reservation: Booking, paid
     { label: c.dates, value: `${longDate(reservation.checkIn, locale)} – ${longDate(reservation.checkOut, locale)}` },
     { label: c.rooms, value: villas },
     { label: t.booking.guests, value: String(reservation.adults + reservation.children) },
+    ...(reservation.extras?.length ? [{ label: t.extras.title, value: reservation.extras.map((row) => row.name).join(", ") }] : []),
     ...(kind === "cancel" ? [] : [
       { label: m.total, value: money(reservation.totalCents, locale), strong: true },
       ...(paidCents ? [{ label: c.paid, value: money(paidCents, locale) }] : []),

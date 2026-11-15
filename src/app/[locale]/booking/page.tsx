@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { CircleAlert, Clock, Lock } from "lucide-react";
 import { db } from "@/lib/db";
-import { DEPOSIT_PERCENT, HOLD_MINUTES, nightsBetween, parseDay, stayPrice, takenUnitIds, validStay } from "@/lib/booking";
+import { DEPOSIT_PERCENT, extraTotal, HOLD_MINUTES, nightsBetween, parseDay, stayPrice, takenUnitIds, validStay } from "@/lib/booking";
 import { alternates, getDict, longDate, money } from "@/lib/i18n";
 import { fmt, img, unitPhotos, type UnitSlug } from "@/lib/site";
 import { BookingBar, PageIntro } from "@/components/site/parts";
@@ -30,6 +30,8 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
   const nights = valid ? nightsBetween(checkIn, checkOut) : 0;
   const [units, taken] = valid ? await Promise.all([db.unit.findMany({ where: { active: true }, orderBy: { sort: "asc" }, include: { rates: true } }), takenUnitIds(checkIn, checkOut)]) : [[], new Set<string>()];
   const free = units.filter((unit) => !taken.has(unit.id));
+  const extras = free.length ? await db.extra.findMany({ where: { active: true, units: { some: { id: { in: free.map((unit) => unit.id) } } } }, orderBy: [{ sort: "asc" }, { createdAt: "asc" }], include: { translations: { where: { locale: { in: [locale, "el"] } } }, units: { select: { id: true } } } }) : [];
+  const per = { PER_STAY: t.extras.perStay, PER_NIGHT: t.extras.perNight, PER_PERSON: t.extras.perPerson };
   const step = valid ? 2 : 1;
 
   return (
@@ -88,6 +90,28 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
                   );
                 })}
               </fieldset>
+
+              {extras.length ? (
+                <fieldset className="ep-stack" style={{ border: 0, padding: 0, margin: 0 }}>
+                  <legend className="mr-h3" style={{ marginBottom: "var(--space-3)" }}>{t.extras.title}</legend>
+                  <p className="mr-hint" style={{ marginBottom: "var(--space-4)" }}>{t.extras.lead}</p>
+                  {extras.map((extra) => {
+                    const copy = extra.translations.find((row) => row.locale === locale) ?? extra.translations[0];
+                    const total = extraTotal(extra.priceCents, extra.pricing, nights, adults + children);
+                    return (
+                      <label key={extra.id} className="ep-unit ep-extra">
+                        <input type="checkbox" name="extra" value={extra.id} data-total={total} data-units={extra.units.map((unit) => unit.id).join(" ")} />
+                        {extra.photos[0] ? <img src={extra.photos[0]} alt="" loading="lazy" /> : <span />}
+                        <span className="ep-stack" style={{ gap: "var(--space-1)" }}>
+                          <span className="ep-unit__name">{copy?.name}</span>
+                          {copy?.description ? <span className="ep-extra__text">{copy.description}</span> : null}
+                          <span className="ep-unit__meta"><span>{money(extra.priceCents, locale)} {per[extra.pricing]}</span><span><strong style={{ color: "var(--text)" }}>{money(total, locale)}</strong> {t.extras.forStay}</span></span>
+                        </span>
+                      </label>
+                    );
+                  })}
+                </fieldset>
+              ) : null}
 
               {free.length ? (
                 <fieldset className="ep-form" style={{ border: 0, padding: 0, margin: 0 }}>

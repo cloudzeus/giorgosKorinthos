@@ -24,6 +24,8 @@ export default async function VillaDetailPage({ params }: Props) {
   const copy = t.units[slug as UnitSlug];
   const shots = unitPhotos[slug as UnitSlug];
   if (!unit || !copy || !shots) notFound();
+  const extras = await db.extra.findMany({ where: { active: true, units: { some: { id: unit.id } } }, orderBy: [{ sort: "asc" }, { createdAt: "asc" }], include: { translations: { where: { locale: { in: [locale, "el"] } } } } });
+  const per = { PER_STAY: t.extras.perStay, PER_NIGHT: t.extras.perNight, PER_PERSON: t.extras.perPerson };
   return (
     <>
       <PageHero src={img(shots[0].name)} alt={t.alt[shots[0].alt]} eyebrow={t.rooms.eyebrow.replace(/^\d+ \/ /, "")} lines={[copy.name]} lead={copy.text} />
@@ -54,6 +56,27 @@ export default async function VillaDetailPage({ params }: Props) {
           </aside>
         </div>
       </section>
+      {extras.length ? (
+        <section className="ep-section ep-section--alt">
+          <div className="ep-container ep-stack ep-stack--lg">
+            <div className="ep-stack"><p className="mr-eyebrow">{t.extras.title}</p><Title lines={[t.extras.villaTitle]} /><p className="mr-lead mr-muted">{t.extras.lead}</p></div>
+            <div className="ep-extras">
+              {extras.map((extra) => {
+                const text = extra.translations.find((row) => row.locale === locale) ?? extra.translations[0];
+                return (
+                  <article className="ep-extracard" key={extra.id}>
+                    {extra.photos[0] ? <div className="ep-extracard__media"><img src={extra.photos[0]} alt="" loading="lazy" /></div> : null}
+                    <h3 className="mr-h3">{text?.name}</h3>
+                    {text?.description ? <p className="mr-body mr-muted">{text.description}</p> : null}
+                    <p className="ep-price">{money(extra.priceCents, locale)} <span className="mr-tag">{per[extra.pricing]}</span></p>
+                  </article>
+                );
+              })}
+            </div>
+            <div><Link className="mr-btn" href={`/${locale}/booking`}>{t.rooms.book}</Link></div>
+          </div>
+        </section>
+      ) : null}
       <HorizontalScroll label={t.rooms.galleryLabel} head={<><div className="ep-stack"><p className="mr-eyebrow">{t.nav.gallery}</p><Title lines={[copy.name]} /></div><Link className="mr-btn mr-btn--secondary" href={`/${locale}/accommodation`}>{t.rooms.all}</Link></>}>
         {shots.map((shot, index) => (
           <div className="ep-rcard" key={shot.name}>

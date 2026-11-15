@@ -505,3 +505,20 @@ main { overflow-x: clip; }
 .ep-cookie p { margin: 0; font-size: var(--fs-14); line-height: 1.55; }
 .ep-cookie div { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: flex-end; }
 .ep-cookie .mr-btn { min-height: 44px; padding-inline: var(--space-6); }
+
+/* Fields side by side start on the same line, even when one has a hint under it. */
+.ep-form__row { align-items: start; }
+.mr-field { align-content: start; }
+
+/* Extra services */
+.ep-extra { align-items: start; }
+.ep-extra__text { font-size: var(--fs-14); color: var(--text-muted); line-height: 1.5; }
+.ep-extras { display: grid; gap: var(--space-8) var(--space-6); }
+@media (min-width: 768px) { .ep-extras { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1100px) { .ep-extras { grid-template-columns: repeat(3, 1fr); } }
+.ep-extracard { display: grid; gap: var(--space-3); align-content: start; padding-top: var(--space-6); border-top: 1px solid var(--border-hairline); }
+.ep-extracard p { margin: 0; }
+.ep-extracard__media { aspect-ratio: 4 / 3; border-radius: var(--radius-md); overflow: hidden; background: var(--surface); margin-bottom: var(--space-2); }
+.ep-extracard__media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1); }
+.ep-extracard:hover .ep-extracard__media img { transform: scale(1.05); }
+@media (prefers-reduced-motion: reduce) { .ep-extracard__media img { transition: none; } }

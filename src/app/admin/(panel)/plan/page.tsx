@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, LogIn, LogOut, Home } from "lucide-react";
-import { requirePermission } from "@/auth";
+import { can, requirePermission } from "@/auth";
 import { db } from "@/lib/db";
 import { addDays, dayString, parseDay } from "@/lib/booking";
-import { PageHead, Status, day, unitLabel } from "@/components/admin/parts";
+import { PageHead, Status, day, eur, unitLabel } from "@/components/admin/parts";
+import { PlanBoard } from "@/components/admin/plan-board";
+import { planMove } from "../../ops-actions";
 
 export const metadata = { title: "Πλάνο κρατήσεων" };
 
@@ -11,7 +13,7 @@ const MONTH = new Intl.DateTimeFormat("el-GR", { month: "long", year: "numeric",
 const WEEKDAY = new Intl.DateTimeFormat("el-GR", { weekday: "narrow", timeZone: "UTC" });
 
 export default async function PlanPage({ searchParams }: PageProps<"/admin/plan">) {
-  await requirePermission("reservations.read");
+  const user = await requirePermission("reservations.read");
   const query = await searchParams;
   const today = parseDay(dayString(new Date()))!;
   const asked = /^\d{4}-\d{2}$/.test(String(query.m)) ? parseDay(`${query.m}-01`) : null;
@@ -25,7 +27,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/admin/plan"
     db.unit.findMany({ where: { active: true }, orderBy: { sort: "asc" } }),
     db.reservation.findMany({
       where: { checkIn: { lt: next }, checkOut: { gt: first }, OR: [{ status: { in: ["CONFIRMED", "BLOCKED"] } }, { status: "PENDING", holdExpiresAt: { gt: now } }] },
-      orderBy: { checkIn: "asc" }, include: { units: true },
+      orderBy: { checkIn: "asc" }, include: { units: true, payments: true },
     }),
   ]);
   const arriving = stays.filter((stay) => stay.status === "CONFIRMED" && dayString(stay.checkIn) === dayString(today));
@@ -40,7 +42,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/admin/plan"
 
   return (
     <>
-      <PageHead title="Πλάνο κρατήσεων" text="Κάθε γραμμή είναι μία βίλα και κάθε στήλη μία ημέρα. Πατήστε μια μπάρα για να ανοίξετε την κράτηση.">
+      <PageHead title="Πλάνο κρατήσεων" text="Κάθε γραμμή είναι μία βίλα και κάθε στήλη μία ημέρα. Σύρετε μια κράτηση για να την αλλάξετε, ή πατήστε τη για την καρτέλα της.">
         <div className="ad-month">
           <Link href={`/admin/plan?m=${dayString(prev).slice(0, 7)}`} aria-label="Προηγούμενος μήνας"><ChevronLeft size={18} strokeWidth={1.5} aria-hidden="true" /></Link>
           <strong>{MONTH.format(first)}</strong>
@@ -55,33 +57,23 @@ export default async function PlanPage({ searchParams }: PageProps<"/admin/plan"
         <div className="ad-card ad-stat"><span className="ad-stat__label">Πληρότητα μήνα</span><span className={`ad-stat__value ad-tone--${booked / nights >= 0.6 ? "good" : booked / nights >= 0.3 ? "warn" : "bad"}`}>{nights ? Math.round((booked / nights) * 100) : 0}%</span><span className="ad-stat__note">{booked} από {nights} βραδιές κλεισμένες.</span></div>
       </section>
 
-      <section className="ad-card ad-plan" aria-label={`Πλάνο ${MONTH.format(first)}`}>
-        <div className="ad-plan__grid" style={{ gridTemplateColumns: `minmax(120px, 160px) repeat(${days.length}, minmax(0, 1fr))` }}>
-          <div className="ad-plan__corner" />
-          {days.map((date, index) => (
-            <div key={index} className={`ad-plan__day${dayString(date) === dayString(today) ? " is-today" : ""}${[0, 6].includes(date.getUTCDay()) ? " is-weekend" : ""}`}>
-              <span>{WEEKDAY.format(date)}</span><strong>{date.getUTCDate()}</strong>
-            </div>
-          ))}
-          {units.map((unit, row) => (
-            <div key={unit.id} style={{ display: "contents" }}>
-              <div className="ad-plan__unit" style={{ gridRow: row + 2 }}>{unitLabel(unit.slug)}</div>
-              {days.map((date, index) => <div key={index} className={`ad-plan__cell${dayString(date) === dayString(today) ? " is-today" : ""}`} style={{ gridRow: row + 2, gridColumn: index + 2 }} />)}
-              {stays.filter((stay) => stay.units.some((item) => item.unitId === unit.id)).map((stay) => {
-                const start = Math.max(2, col(stay.checkIn)), end = Math.min(days.length + 2, col(stay.checkOut));
-                return (
-                  <Link key={stay.id} href={`/admin/reservations/${stay.id}`} className={`ad-plan__bar ad-plan__bar--${stay.status.toLowerCase()}`} style={{ gridRow: row + 2, gridColumn: `${start} / ${Math.max(end, start + 1)}`, ["--n" as string]: Math.max(end - start, 1), ["--in" as string]: stay.checkIn >= first ? 1 : 0, ["--out" as string]: stay.checkOut <= next && end > start ? 1 : 0 }} title={`${stay.guestName}: ${day(stay.checkIn)} έως ${day(stay.checkOut)}`}>
-                    <span>{stay.status === "BLOCKED" ? "Κλειστό" : stay.guestName}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-        <p className="ad-plan__legend">
-          <span><i className="ad-plan__bar--confirmed" />Επιβεβαιωμένη</span><span><i className="ad-plan__bar--pending" />Αναμονή πληρωμής</span><span><i className="ad-plan__bar--blocked" />Κλειστές ημερομηνίες</span>
-        </p>
-      </section>
+      <PlanBoard
+        first={dayString(first)}
+        label={`Πλάνο ${MONTH.format(first)}`}
+        canEdit={can(user.role, "reservations.write")}
+        move={planMove}
+        days={days.map((date) => ({ day: date.getUTCDate(), weekday: WEEKDAY.format(date), today: dayString(date) === dayString(today), weekend: [0, 6].includes(date.getUTCDay()) }))}
+        units={units.map((unit) => ({ id: unit.id, label: unitLabel(unit.slug) }))}
+        stays={stays.flatMap((stay) => stay.units.map((item) => {
+          const paid = stay.payments.reduce((sum, row) => sum + row.amountCents, 0);
+          return {
+            id: stay.id, unitId: item.unitId, start: col(stay.checkIn) - 2, end: col(stay.checkOut) - 2,
+            name: stay.guestName, status: stay.status as "CONFIRMED" | "PENDING" | "BLOCKED", code: stay.code,
+            dates: `${day(stay.checkIn)} έως ${day(stay.checkOut)}`, nights: Math.round((stay.checkOut.getTime() - stay.checkIn.getTime()) / 86_400_000), guests: stay.adults + stay.children,
+            total: eur(stay.totalCents), paid: eur(paid), balance: eur(stay.totalCents - paid), owes: stay.totalCents - paid > 0, phone: stay.guestPhone, movable: stay.units.length === 1,
+          };
+        }))}
+      />
 
       {/* On phones a month grid is unreadable: the same stays as a list. */}
       <section className="ad-card ad-plan-list">

@@ -1,4 +1,4 @@
-import { Prisma, type RatePeriod, type Reservation } from "@prisma/client";
+import { Prisma, type ExtraPricing, type RatePeriod, type Reservation } from "@prisma/client";
 import { randomBytes } from "node:crypto";
 import { db } from "./db";
 
@@ -37,6 +37,11 @@ export function stayPrice(baseCents: number, rates: Rate[], checkIn: Date, check
   return { totalCents, minNights: rateFor(checkIn)?.minNights ?? 1 };
 }
 
+/** What an extra service costs for a stay: once, per night, or per guest. */
+export function extraTotal(priceCents: number, pricing: ExtraPricing, nights: number, guests: number) {
+  return priceCents * (pricing === "PER_NIGHT" ? nights : pricing === "PER_PERSON" ? guests : 1);
+}
+
 /** The part of a total charged online. Money stays in integer cents. */
 export const depositOf = (totalCents: number, depositPercent = DEPOSIT_PERCENT) => Math.round((totalCents * depositPercent) / 100);
 
@@ -72,6 +77,8 @@ export interface HoldInput {
   guestPhone?: string;
   notes?: string;
   locale: string;
+  /** Optional services the guest ticked. Ones not offered by the chosen villas are ignored. */
+  extraIds?: string[];
   status?: "PENDING" | "CONFIRMED" | "BLOCKED";
   source?: "WEB" | "MANUAL";
 }
@@ -110,6 +117,15 @@ export function createReservation(input: HoldInput): Promise<Reservation> {
       const status = input.status ?? "PENDING";
       // Guests booking online must respect the season's minimum stay; staff may override it.
       if (input.source !== "MANUAL" && nights < minNights) throw new MinNightsError(minNights);
+      const offered = input.extraIds?.length
+        ? await tx.extra.findMany({ where: { id: { in: input.extraIds }, active: true, units: { some: { id: { in: input.unitIds } } } }, include: { translations: true } })
+        : [];
+      const extras = offered.map((extra) => ({
+        extraId: extra.id,
+        name: (extra.translations.find((row) => row.locale === input.locale) ?? extra.translations.find((row) => row.locale === "el") ?? extra.translations[0])?.name ?? "Extra",
+        priceCents: extraTotal(extra.priceCents, extra.pricing, nights, input.adults + input.children),
+      }));
+      const grandTotal = totalCents + extras.reduce((sum, row) => sum + row.priceCents, 0);
       const email = input.guestEmail.trim().toLowerCase();
       const guest = email && status !== "BLOCKED"
         ? await tx.guest.upsert({
@@ -133,11 +149,12 @@ export function createReservation(input: HoldInput): Promise<Reservation> {
           notes: input.notes || null,
           locale: input.locale,
           guestId: guest?.id,
-          totalCents: status === "BLOCKED" ? 0 : totalCents,
-          dueCents: status === "BLOCKED" ? 0 : depositOf(totalCents),
+          totalCents: status === "BLOCKED" ? 0 : grandTotal,
+          dueCents: status === "BLOCKED" ? 0 : depositOf(grandTotal),
           holdExpiresAt: status === "PENDING" ? new Date(Date.now() + HOLD_MINUTES * 60_000) : null,
           consentAt: input.source === "MANUAL" ? null : new Date(),
           units: { create: priced.map((row) => ({ unitId: row.unit.id, priceCents: Math.round(row.totalCents / nights) })) },
+          extras: { create: status === "BLOCKED" ? [] : extras },
         },
       });
     }, serializable),
@@ -150,11 +167,13 @@ export function rescheduleReservation(id: string, unitIds: string[], checkIn: Da
     db.$transaction(async (tx) => {
       const { priced, nights, totalCents } = await priceUnits(tx, unitIds, checkIn, checkOut, id);
       await tx.reservationUnit.deleteMany({ where: { reservationId: id } });
+      // Extras keep the amount they were sold for; only the villa nights are re-priced.
+      const extras = await tx.reservationExtra.aggregate({ where: { reservationId: id }, _sum: { priceCents: true } });
       return tx.reservation.update({
         where: { id },
         data: {
           checkIn, checkOut,
-          ...(reprice ? { totalCents } : {}),
+          ...(reprice ? { totalCents: totalCents + (extras._sum.priceCents ?? 0) } : {}),
           units: { create: priced.map((row) => ({ unitId: row.unit.id, priceCents: Math.round(row.totalCents / nights) })) },
         },
       });
@@ -179,5 +198,5 @@ export async function confirmPaid(orderCode: string, transactionId: string, amou
   });
   if (!updated.count) return null;
   await db.payment.create({ data: { reservationId: reservation.id, amountCents, method: "VIVA", note: transactionId } });
-  return db.reservation.findUnique({ where: { id: reservation.id }, include: { units: { include: { unit: true } } } });
+  return db.reservation.findUnique({ where: { id: reservation.id }, include: { units: { include: { unit: true } }, extras: true } });
 }

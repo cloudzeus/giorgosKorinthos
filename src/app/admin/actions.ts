@@ -30,7 +30,7 @@ export async function logout() {
 export async function setReservationStatus(id: string, status: "CONFIRMED" | "CANCELLED") {
   const user = await requirePermission("reservations.write");
   const before = await db.reservation.findUnique({ where: { id }, select: { status: true } });
-  const reservation = await db.reservation.update({ where: { id }, data: { status, holdExpiresAt: null }, include: { units: { include: { unit: true } }, payments: true } });
+  const reservation = await db.reservation.update({ where: { id }, data: { status, holdExpiresAt: null }, include: { units: { include: { unit: true } }, payments: true, extras: true } });
   // Tell the guest when a confirmed stay is cancelled. Blocked dates and expired holds have nobody to tell.
   if (status === "CANCELLED" && before?.status === "CONFIRMED") await sendBookingEmail("cancel", reservation, reservation.payments.reduce((sum, row) => sum + row.amountCents, 0));
   await audit(user.id, `reservation.${status.toLowerCase()}`, "Reservation", id);

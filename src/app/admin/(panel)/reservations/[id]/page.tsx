@@ -23,7 +23,7 @@ export default async function ReservationPage({ params, searchParams }: PageProp
   const { id } = await params;
   const query = await searchParams;
   const [r, units] = await Promise.all([
-    db.reservation.findUnique({ where: { id }, include: { units: { include: { unit: true } }, payments: { orderBy: { createdAt: "asc" } }, tickets: { orderBy: { createdAt: "desc" } }, guest: true } }),
+    db.reservation.findUnique({ where: { id }, include: { units: { include: { unit: true } }, payments: { orderBy: { createdAt: "asc" } }, tickets: { orderBy: { createdAt: "desc" } }, guest: true, extras: true } }),
     db.unit.findMany({ where: { active: true }, orderBy: { sort: "asc" } }),
   ]);
   if (!r) notFound();
@@ -103,6 +103,7 @@ export default async function ReservationPage({ params, searchParams }: PageProp
             <div><dt>Πελάτης</dt><dd>{r.guest ? <Link href={`/admin/guests/${r.guest.id}`}>{r.guestName}</Link> : r.guestName}{r.guest?.vip ? <> <Badge variant="purple">VIP</Badge></> : null}</dd></div>
             <div><dt>Επικοινωνία</dt><dd>{r.guestEmail ? <a href={`mailto:${r.guestEmail}`}>{r.guestEmail}</a> : "-"}{r.guestPhone ? <><br /><a href={`tel:${r.guestPhone}`}>{r.guestPhone}</a></> : null}</dd></div>
             <div><dt>Άτομα</dt><dd>{r.adults} ενήλικες{r.children ? `, ${r.children} παιδιά` : ""}</dd></div>
+            <div><dt>Έξτρα υπηρεσίες</dt><dd>{r.extras.length ? r.extras.map((row) => <span key={row.id} style={{ display: "block" }}>{row.name} · {eur(row.priceCents)}</span>) : "Καμία"}</dd></div>
             <div><dt>Προέλευση</dt><dd>{r.source === "WEB" ? "Online από το site" : "Καταχωρίστηκε χειροκίνητα"} · {stamp(r.createdAt)}</dd></div>
             <div><dt>Σημειώσεις πελάτη</dt><dd style={{ whiteSpace: "pre-wrap" }}>{r.notes || "-"}</dd></div>
             <div><dt>Εσωτερικές σημειώσεις</dt><dd style={{ whiteSpace: "pre-wrap" }}>{r.internalNotes || "-"}</dd></div>

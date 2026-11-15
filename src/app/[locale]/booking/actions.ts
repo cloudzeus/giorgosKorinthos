@@ -41,7 +41,7 @@ export async function reserve(formData: FormData) {
   let reservation;
   try {
     reservation = await createReservation({
-      unitIds, checkIn, checkOut, adults: data.adults, children: data.children,
+      unitIds, checkIn, checkOut, adults: data.adults, children: data.children, extraIds: formData.getAll("extra").map(String),
       guestName: data.name, guestEmail: data.email.toLowerCase(), guestPhone: data.phone, notes: data.notes, locale,
     });
   } catch (error) {
