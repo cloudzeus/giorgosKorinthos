@@ -7,7 +7,8 @@ import { contact, img } from "@/lib/site";
 import { LogoFull, LogoHorizontal, LogoMark, LogoWordmark } from "@/components/site/Logo";
 import { HeaderShell, MotionToggle, Providers, RouteTransition } from "@/components/site/motion-kit";
 import { Botanical, Cursor } from "@/components/site/fx";
-import { Consent } from "@/components/site/consent";
+import { Consent, CookieSettingsButton } from "@/components/site/consent";
+import { CONSENT_UI, DOCS, LEGAL } from "@/lib/legal";
 import { getSettings } from "@/lib/settings";
 
 // Display: a high-contrast serif with Greek. Text and UI: Manrope.
@@ -74,7 +75,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   <ul>{items.slice(0, 3).map((item) => <li key={item.href}><Link href={item.href}>{item.label}</Link></li>)}</ul>
                 </nav>
                 <nav aria-label={t.nav.menu}>
-                  <h2>&nbsp;</h2>
+                  <div className="ep-footer__gap" aria-hidden="true">&nbsp;</div>
                   <ul>
                     {items.slice(3).map((item) => <li key={item.href}><Link href={item.href}>{item.label}</Link></li>)}
                     <li><Link href={`${base}/booking`}>{t.nav.book}</Link></li>
@@ -90,6 +91,10 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   </ul>
                 </div>
               </div>
+              <nav className="ep-footer__legal" aria-label={LEGAL[locale].terms.title}>
+                {DOCS.map((doc) => <Link key={doc} href={`${base}/legal/${doc}`}>{LEGAL[locale][doc].title}</Link>)}
+                <CookieSettingsButton>{CONSENT_UI[locale].settings}</CookieSettingsButton>
+              </nav>
               <div className="ep-footer__bottom">
                 <span>© {new Date().getFullYear()} Ephyria Lux. {t.footer.rights}</span>
                 <MotionToggle offLabel={t.footer.motionOff} onLabel={t.footer.motionOn} />
@@ -98,7 +103,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
             </div>
           </footer>
           <Cursor />
-          <Consent ids={{ ga: settings.GA_MEASUREMENT_ID, ads: settings.GOOGLE_ADS_ID, gtm: settings.GTM_ID }} labels={t.cookie} />
+          <Consent ids={{ ga: settings.GA_MEASUREMENT_ID, ads: settings.GOOGLE_ADS_ID, gtm: settings.GTM_ID }} labels={{ ...CONSENT_UI[locale], policy: LEGAL[locale].cookies.title, policyHref: `${base}/legal/cookies` }} />
         </Providers>
       </body>
     </html>

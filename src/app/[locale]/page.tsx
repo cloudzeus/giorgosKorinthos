@@ -64,9 +64,10 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
       <Marquee words={t.mottos} />
 
       {/* 4. The arch of the logo opens onto the pool */}
-      <ArchReveal media={<PoolImage name="outdoor-11" alt={t.alt.poolNight} />} title={<p className="ep-display">{t.pool.lines[0]}<br /><em>{t.pool.lines[1]}</em></p>}>
+      <ArchReveal media={<PoolImage name="outdoor-11" alt={t.alt.poolNight} />} title={<h2 className="ep-display">{t.pool.lines[0]}<br /><em>{t.pool.lines[1]}</em></h2>}>
         <p className="mr-eyebrow">{t.pool.eyebrow}</p>
-        <h2 className="mr-h2">{t.pool.lines[0]} <em>{t.pool.lines[1]}</em></h2>
+        {/* The heading is the large title above; this repeat over the photograph is for the eye only. */}
+        <p className="mr-h2" aria-hidden="true">{t.pool.lines[0]} <em>{t.pool.lines[1]}</em></p>
         <p className="mr-lead">{t.pool.text}</p>
       </ArchReveal>
 
@@ -93,10 +94,10 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
         </>}
       >
         {journey.map((shot, index) => (
-          <Link className="ep-rcard" key={shot.name} href={`${base}/gallery`} data-cursor={t.rooms.view}>
-            <div className="ep-rcard__media"><img src={img(shot.name)} alt={shot.alt} loading="lazy" /><span className="ep-rcard__idx">{String(index + 1).padStart(2, "0")}</span></div>
+          <article className="ep-rcard" key={shot.name}>
+            <div className="ep-rcard__media"><img src={img(shot.name)} alt="" loading="lazy" /><span className="ep-rcard__idx">{String(index + 1).padStart(2, "0")}</span></div>
             <div className="ep-rcard__foot"><h3>{shot.alt}</h3></div>
-          </Link>
+          </article>
         ))}
       </HorizontalScroll>
 

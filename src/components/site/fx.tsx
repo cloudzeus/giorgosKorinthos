@@ -29,8 +29,9 @@ export function Title({ lines, as: Tag = "h2", className = "mr-h2", accent = tru
 export function ScrubText({ text, className = "ep-statement" }: { text: string; className?: string }) {
   const ref = useRef<HTMLParagraphElement>(null);
   useGsap(ref, (root) => {
-    gsap.fromTo(root.querySelectorAll("span"), { opacity: 0.14 }, {
-      opacity: 1, ease: "none", stagger: 0.08,
+    // Words wake from a grey that still passes 3:1 on both the ivory and the olive surfaces, never from near-invisible.
+    gsap.fromTo(root.querySelectorAll("span"), { color: "#898B7F" }, {
+      color: getComputedStyle(root).color, ease: "none", stagger: 0.08,
       scrollTrigger: { trigger: root, start: "top 82%", end: "bottom 48%", scrub: true },
     });
   }, [text]);
@@ -113,7 +114,7 @@ export function ArchReveal({ media, title, children }: { media: React.ReactNode;
   });
   return (
     <section ref={ref} className="ep-arch">
-      <div className="ep-arch__title" aria-hidden="true">{title}</div>
+      <div className="ep-arch__title">{title}</div>
       <div className="ep-arch__window">{media}</div>
       <div className="ep-container ep-arch__body">{children}</div>
     </section>

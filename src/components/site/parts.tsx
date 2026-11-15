@@ -119,10 +119,10 @@ export function VillaBlock({ unit, locale, t, reverse, index }: { unit: Unit; lo
   const href = `/${locale}/accommodation/${unit.slug}`;
   return (
     <article className={`ep-villa${reverse ? " ep-villa--reverse" : ""}`}>
-      <Link href={href} className="ep-villa__media" aria-label={`${t.rooms.explore}: ${copy.name}`}>
-        <Frame src={img(shots[0].name)} alt={t.alt[shots[0].alt]} arch speed={10} label={t.rooms.view} className="ep-villa__main" />
-        <Frame src={img(shots[1].name)} alt={t.alt[shots[1].alt]} speed={-8} className="ep-villa__side" />
-      </Link>
+      <div className="ep-villa__media">
+        <Frame src={img(shots[0].name)} alt={`${copy.name}: ${t.alt[shots[0].alt]}`} arch speed={10} className="ep-villa__main" />
+        <Frame src={img(shots[1].name)} alt={`${copy.name}: ${t.alt[shots[1].alt]}`} speed={-8} className="ep-villa__side" />
+      </div>
       <div className="ep-villa__body">
         <p className="ep-number">{String(index + 1).padStart(2, "0")}</p>
         <Title lines={[copy.name]} className="ep-display" />
