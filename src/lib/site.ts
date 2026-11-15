@@ -88,3 +88,20 @@ export const pools: Record<string, { w: number; h: number; water: [number, numbe
   "outdoor-11": { w: 1672, h: 941, water: [[42.5, 41], [63.5, 41], [99, 88], [99, 94.5], [6, 94.5]] },
   "outdoor-01": { w: 1798, h: 875, water: [[38, 30.5], [60, 30.5], [98, 61], [99, 77], [6, 77], [6, 71]] },
 };
+
+/** Photographs of the places, from Wikimedia Commons. Each is shown with its author and licence, as the licences require. */
+export const placePhotos: Record<PlaceSlug, { author: string; license: string; licenseUrl: string; source: string }> = {
+  "ancient-corinth": { author: "Berthold Werner", license: "CC BY-SA 3.0", licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/", source: "https://commons.wikimedia.org/wiki/File:Korinth_BW_2017-10-10_10-50-32.jpg" },
+  "acrocorinth": { author: "Nicolas von Kospoth (Triggerhappy)", license: "CC BY-SA 2.5", licenseUrl: "https://creativecommons.org/licenses/by-sa/2.5/", source: "https://commons.wikimedia.org/wiki/File:Acrocorinth_Gateway.jpg" },
+  "corinth-canal": { author: "evievaki1234", license: "CC BY 2.0", licenseUrl: "https://creativecommons.org/licenses/by/2.0/", source: "https://commons.wikimedia.org/wiki/File:Corinth_Canal,_Greece-17Feb2012.jpg" },
+  "isthmia": { author: "Zde", license: "CC BY-SA 4.0", licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/", source: "https://commons.wikimedia.org/wiki/File:Archaeological_site_of_Isthmia,_Roman_Baths,_202745.jpg" },
+  "kenchreai": { author: "Carole Raddato", license: "CC BY-SA 2.0", licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/", source: "https://commons.wikimedia.org/wiki/File:Temple_of_Isis_at_the_southwest_side_of_the_ancient_harbour_at_Kenchreai,_one_of_the_two_ports_of_the_inland_city-state_of_Corinth,_Greece_(14082672584).jpg" },
+  "loutraki": { author: "Cliff Seiber", license: "Public domain", licenseUrl: "", source: "https://commons.wikimedia.org/wiki/File:Loutraki_beach_promenade.JPG" },
+  "heraion": { author: "Donarreiskoffer", license: "CC BY-SA 4.0", licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/", source: "https://commons.wikimedia.org/wiki/File:Heraion_of_Perachora,_Greece_06.jpg" },
+  "lake-vouliagmeni": { author: "Charski A.V.", license: "Public domain", licenseUrl: "", source: "https://commons.wikimedia.org/wiki/File:Vouliagmeni,_Corinth.jpg" },
+  "nemea": { author: "Zde", license: "CC BY-SA 4.0", licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/", source: "https://commons.wikimedia.org/wiki/File:Temple_of_Nemean_Zeus,_330_BC,_201754.jpg" },
+  "mycenae": { author: "Zde", license: "CC BY-SA 4.0", licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/", source: "https://commons.wikimedia.org/wiki/File:Lion_Gate,_Mycenae,_201507.jpg" },
+  "stymphalia": { author: "Nojos88", license: "CC BY-SA 4.0", licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/", source: "https://commons.wikimedia.org/wiki/File:%CE%9B%CE%AF%CE%BC%CE%BD%CE%B7_%CE%A3%CF%84%CF%85%CE%BC%CF%86%CE%B1%CE%BB%CE%AF%CE%B1%CF%82_6.jpg" },
+  "lechaion": { author: "Schuppi", license: "CC BY-SA 4.0", licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/", source: "https://commons.wikimedia.org/wiki/File:Korakou_(Corinth)_7.JPG" },
+};
+export const placeImg = (slug: PlaceSlug) => `/images/places/${slug}.webp`;

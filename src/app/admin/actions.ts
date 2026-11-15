@@ -9,6 +9,8 @@ import { db } from "@/lib/db";
 import { createReservation, parseDay, UnitsTakenError, nightsBetween } from "@/lib/booking";
 import { generateArticle } from "@/lib/ai";
 import { locales } from "@/lib/i18n";
+import { bunnyConfigured, bunnyDelete } from "@/lib/bunny";
+import { isSlot } from "@/lib/media";
 
 export async function login(formData: FormData) {
   try {
@@ -128,4 +130,32 @@ export async function setInquiryHandled(id: string, handled: boolean) {
   await db.inquiry.update({ where: { id }, data: { handled } });
   await audit(user.id, handled ? "inquiry.handled" : "inquiry.reopen", "Inquiry", id);
   revalidatePath("/admin", "layout");
+}
+
+// ── Media library ─────────────────────────────────────────────
+export async function updateMedia(id: string, formData: FormData) {
+  const user = await requirePermission("media.write");
+  const title = String(formData.get("title") ?? "").trim().slice(0, 160);
+  const credit = String(formData.get("credit") ?? "").trim().slice(0, 200);
+  const slot = String(formData.get("slot") ?? "");
+  if (!title || (slot && !isSlot(slot))) redirect("/admin/media?error=form");
+  // A slot holds one file: free it from whoever had it.
+  if (slot) await db.mediaAsset.updateMany({ where: { slot, NOT: { id } }, data: { slot: null } });
+  await db.mediaAsset.update({ where: { id }, data: { title, credit: credit || null, slot: slot || null } });
+  await audit(user.id, "media.update", "MediaAsset", id);
+  revalidatePath("/", "layout");
+  redirect("/admin/media?ok=saved");
+}
+
+export async function deleteMedia(id: string) {
+  const user = await requirePermission("media.write");
+  const asset = await db.mediaAsset.findUnique({ where: { id } });
+  if (!asset) return;
+  if (asset.url.startsWith("http") && bunnyConfigured()) {
+    await bunnyDelete(asset.path);
+    if (asset.poster) await bunnyDelete(asset.path.replace(/\.mp4$/, ".webp"));
+  }
+  await db.mediaAsset.delete({ where: { id } });
+  await audit(user.id, "media.delete", "MediaAsset", id);
+  revalidatePath("/", "layout");
 }

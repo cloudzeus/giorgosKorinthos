@@ -208,3 +208,21 @@ export function Cursor() {
   }, [reduced]);
   return <div ref={ref} className="ep-cursor" aria-hidden="true" />;
 }
+
+/** Silent looping film that plays only while it is on screen, and stays a still image under reduced motion. */
+export function AutoVideo({ src, poster, className = "", label }: { src: string; poster?: string | null; className?: string; label: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const { reduced } = useMotion();
+  React.useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    if (reduced) { video.pause(); return; }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) video.play().catch(() => {});
+      else video.pause();
+    }, { threshold: 0.25 });
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, [reduced]);
+  return <video ref={ref} className={className} src={src} poster={poster ?? undefined} muted loop playsInline preload="none" aria-label={label} />;
+}

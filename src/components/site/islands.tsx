@@ -1,6 +1,7 @@
 "use client";
 // Interactive pieces of the gallery and of Explore Corinth.
 import React, { useEffect, useRef, useState } from "react";
+import { AutoVideo } from "./fx";
 import { ExperienceFilter } from "@/components/ds/ExperienceFilter";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Place } from "@/components/ds/destinations";
@@ -69,6 +70,10 @@ export interface PlaceRow extends Place {
   visit: string;
   directions: string;
   tip: string;
+  photo: string;
+  video?: string | null;
+  poster?: string | null;
+  credit?: { text: string; href?: string } | null;
 }
 
 const PAPER = "#F6F3ED", WATER = "#BFCBC6", LAND = "#EAE5DA", ROAD = "#D8CFBF", INK = "#555C50";
@@ -158,6 +163,10 @@ export function ExploreConcierge({ places, categories, labels, origin }: {
                 <span className="ep-number">{String(i + 1).padStart(2, "0")} / {place.categoryLabel}</span>
                 <span className="ep-rec__name">{place.name}</span>
               </button>
+              <figure className="ep-rec__media">
+                {place.video ? <AutoVideo src={place.video} poster={place.poster ?? place.photo} label={place.name} /> : <img src={place.photo} alt={place.name} loading="lazy" />}
+                {place.credit ? <figcaption>{place.credit.href ? <a href={place.credit.href} target="_blank" rel="noopener noreferrer">{place.credit.text}</a> : place.credit.text}</figcaption> : null}
+              </figure>
               <p className="mr-body mr-muted">{place.summary}</p>
               <p className="ep-rec__tip"><strong>{labels.tip}</strong>{place.tip}</p>
               <div className="ep-rec__foot">

@@ -2,7 +2,7 @@
 import Link from "next/link";
 import type { Unit } from "@prisma/client";
 import { HeroMotion } from "./motion-kit";
-import { Frame, Title } from "./fx";
+import { AutoVideo, Frame, Title } from "./fx";
 import { money, type Dict, type Locale } from "@/lib/i18n";
 import { fmt, img, pools, unitPhotos, type UnitSlug } from "@/lib/site";
 import { dayString } from "@/lib/booking";
@@ -81,10 +81,10 @@ export function HeroTitle({ lines }: { lines: string[] }) {
 }
 
 /** Photograph hero for inner pages, with the same choreography as the homepage. */
-export function PageHero({ src, alt, eyebrow, lines, lead }: { src: string; alt: string; eyebrow: string; lines: string[]; lead?: string }) {
+export function PageHero({ src, alt, eyebrow, lines, lead, video }: { src: string; alt: string; eyebrow: string; lines: string[]; lead?: string; video?: string | null }) {
   return (
     <HeroMotion className="ep-hero--page">
-      <div className="ep-pool ep-hero__media"><img src={src} alt={alt} fetchPriority="high" /></div>
+      <div className="ep-pool ep-hero__media">{video ? <AutoVideo src={video} poster={src} label={alt} /> : <img src={src} alt={alt} fetchPriority="high" />}</div>
       <div className="ep-container ep-hero__body">
         <p className="mr-eyebrow" data-hero-fade>{eyebrow}</p>
         <div className="ep-hero__row">

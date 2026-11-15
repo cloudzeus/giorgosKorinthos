@@ -1,16 +1,18 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { getDict, longDate } from "@/lib/i18n";
-import { contact, img, places } from "@/lib/site";
+import { contact, img, placeImg, places } from "@/lib/site";
+import { slotMap } from "@/lib/media";
 import { MagneticButton } from "@/components/ds/MagneticButton";
 import { HeroMotion } from "@/components/site/motion-kit";
-import { ArchReveal, CountUp, Frame, HorizontalScroll, Marquee, ParallaxCover, Scenes, ScrubText, Stagger, Title } from "@/components/site/fx";
+import { ArchReveal, AutoVideo, CountUp, Frame, HorizontalScroll, Marquee, ParallaxCover, Scenes, ScrubText, Stagger, Title } from "@/components/site/fx";
 import { BookingBar, HeroTitle, PoolImage, VillaBlock } from "@/components/site/parts";
 
 export default async function Home({ params }: PageProps<"/[locale]">) {
   const { locale, t } = getDict((await params).locale);
   const base = `/${locale}`;
-  const [units, posts] = await Promise.all([
+  const [media, units, posts] = await Promise.all([
+    slotMap(),
     db.unit.findMany({ where: { active: true }, orderBy: { sort: "asc" } }),
     db.article.findMany({ where: { status: "PUBLISHED" }, orderBy: { publishedAt: "desc" }, take: 3, include: { translations: { where: { locale } } } }),
   ]);
@@ -136,6 +138,12 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
             <Title lines={t.explore.lines} className="ep-display" />
             <p className="mr-lead mr-muted">{t.explore.lead}</p>
           </div>
+          {media.get("home.region.video") ? (
+            <div className="ep-film">
+              <AutoVideo src={media.get("home.region.video")!.url} poster={media.get("home.region.video")!.poster} label={t.places["ancient-corinth"].name} />
+              <p className="ep-film__caption"><span className="mr-eyebrow">{t.places["ancient-corinth"].name}</span><span className="mr-editorial">{t.places["ancient-corinth"].tip}</span></p>
+            </div>
+          ) : null}
           <Stagger className="ep-places" selector=".ep-place">
             {places.slice(0, 6).map((place, index) => (
               <Link className="ep-place" key={place.slug} href={`${base}/explore-corinth#place-${place.slug}`} style={{ color: "inherit", textDecoration: "none" }}>
@@ -145,7 +153,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
                   <h3 className="mr-h3">{t.places[place.slug].name}</h3>
                 </div>
                 <p className="mr-body mr-muted">{t.places[place.slug].summary}</p>
-                <p className="mr-tag">{t.explore.visit}: {t.places[place.slug].duration}</p>
+                <img className="ep-place__thumb" src={media.get(`place.${place.slug}.photo`)?.url ?? media.get(`place.${place.slug}.video`)?.poster ?? placeImg(place.slug)} alt="" loading="lazy" />
               </Link>
             ))}
           </Stagger>

@@ -32,6 +32,11 @@ enum ReservationSource {
   MANUAL
 }
 
+enum MediaKind {
+  IMAGE
+  VIDEO
+}
+
 enum ArticleStatus {
   DRAFT
   PUBLISHED
@@ -145,4 +150,21 @@ model AuditEvent {
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
+}
+
+/// A file in the media library. Stored on Bunny Storage and served from the Bunny CDN pull zone
+/// (or from /public/media-local while Bunny is not configured).
+model MediaAsset {
+  id        String    @id @default(cuid())
+  kind      MediaKind
+  path      String    @unique // path inside the storage zone, e.g. "videos/places/corinth-canal.mp4"
+  url       String // public URL
+  poster    String? // still frame for videos
+  title     String
+  credit    String? // licence or author, shown where required
+  slot      String?   @unique // where the site uses it, e.g. "place.corinth-canal.video"
+  bytes     Int
+  width     Int?
+  height    Int?
+  createdAt DateTime  @default(now())
 }

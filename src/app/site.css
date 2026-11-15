@@ -434,3 +434,18 @@ html.is-returning .ep-loader { display: none; }
 .ep-hero__media.ep-pool { position: absolute; }
 @media (prefers-reduced-motion: reduce) { .ep-water { display: none; } }
 html.is-still .ep-water { display: none; }
+
+/* Films and photographs of the region */
+.ep-rec__media { margin: 0; display: grid; gap: var(--space-2); }
+.ep-rec__media img, .ep-rec__media video { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radius-md); background: var(--surface-alt); }
+.ep-rec__media figcaption, .ep-rec__media figcaption a { font-size: var(--fs-12); color: var(--text-muted); }
+.ep-pool > video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.ep-film { position: relative; border-radius: var(--radius-md); overflow: hidden; aspect-ratio: 21 / 9; background: var(--surface-inverse); }
+.ep-film video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ep-film::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(38, 40, 36, 0.75), transparent 55%); }
+.ep-film__caption { position: absolute; inset: auto 0 0 0; z-index: 1; margin: 0; padding: var(--space-8); display: grid; gap: var(--space-2); color: var(--text-inverse); max-width: 60ch; }
+.ep-film__caption .mr-eyebrow { color: var(--text-inverse-muted); }
+.ep-film__caption .mr-editorial { font-size: var(--fs-24); line-height: 1.3; }
+.ep-place__thumb { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radius-md); background: var(--surface-alt); }
+@media (min-width: 900px) { .ep-place { grid-template-columns: 56px 3fr 5fr 2.4fr; align-items: center; } }
+@media (max-width: 767px) { .ep-film { aspect-ratio: 4 / 5; } }
