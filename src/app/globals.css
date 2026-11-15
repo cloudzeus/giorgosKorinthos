@@ -1,0 +1,123 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "./type-tokens.css";
+@import "./ds.css";
+@import "./site.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@import "./type-tokens.css";
+@import "./ds.css";
+@import "./site.css";
+
+/* Ephyria Lux tokens (design system tokens.json). One light theme. */
+:root {
+  --warm-ivory: #F6F3ED; --soft-limestone: #E5DDD0; --deep-olive: #343F35; --muted-sage: #899381; --champagne: #B39B78; --charcoal: #262824;
+  --surface: var(--warm-ivory); --surface-alt: var(--soft-limestone); --surface-inverse: var(--deep-olive);
+  --text: var(--charcoal); --text-muted: #555C50; --text-accent: #6E5A38; --text-inverse: var(--warm-ivory); --text-inverse-muted: #C9CFC2;
+  --border-hairline: var(--champagne); --border-subtle: var(--soft-limestone); --border-control: #857A64;
+  --action: var(--deep-olive); --action-hover: #29322A; --on-action: var(--warm-ivory);
+  --focus-ring: var(--deep-olive); --focus-ring-inverse: var(--warm-ivory);
+  --danger: #9A3324; --danger-surface: #F3E2DC; --positive: var(--deep-olive); --positive-surface: #DDE3D8;
+  --warning: #7A5A12; --warning-surface: #F2E8CC;
+  --overlay: rgba(38, 40, 36, 0.45);
+  --font-display: var(--font-manrope), "Helvetica Neue", Arial, sans-serif;
+  --font-sans: var(--font-inter), "Helvetica Neue", Arial, sans-serif;
+  --font-serif: var(--font-cormorant), Georgia, serif;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px; --space-8: 32px; --space-12: 48px;
+  --section: clamp(64px, 10vw, 160px);
+  --radius-sm: 2px; --radius-md: 4px;
+  --container: 1440px; --measure: 680px; --target-min: 44px;
+  --micro-max: 0.25s;
+
+  /* shadcn/ui mapping */
+  --background: var(--surface); --foreground: var(--text);
+  --card: var(--surface); --card-foreground: var(--text);
+  --popover: var(--surface); --popover-foreground: var(--text);
+  --primary: var(--action); --primary-foreground: var(--on-action);
+  --secondary: var(--surface-alt); --secondary-foreground: var(--text);
+  --muted: var(--surface-alt); --muted-foreground: var(--text-muted);
+  --accent: var(--surface-alt); --accent-foreground: var(--text);
+  --destructive: var(--danger);
+  --border: var(--border-subtle); --input: var(--border-control); --ring: var(--focus-ring);
+  --radius: 4px;
+  --chart-1: var(--deep-olive); --chart-2: var(--muted-sage); --chart-3: var(--champagne); --chart-4: #555C50; --chart-5: var(--soft-limestone);
+  --sidebar: var(--surface-inverse); --sidebar-foreground: var(--text-inverse);
+  --sidebar-primary: var(--surface); --sidebar-primary-foreground: var(--text);
+  --sidebar-accent: #29322A; --sidebar-accent-foreground: var(--text-inverse);
+  --sidebar-border: #4A564B; --sidebar-ring: var(--focus-ring-inverse);
+}
+
+/* DG design system class names, repainted with the Ephyria palette (admin only). */
+@theme {
+  --color-sisyphus-50: #EEF1EC; --color-sisyphus-100: #DDE3D8; --color-sisyphus-200: #C9CFC2; --color-sisyphus-500: #343F35; --color-sisyphus-600: #29322A; --color-sisyphus-700: #1F261F;
+  --color-dg-red-500: #343F35; --color-dg-red-600: #29322A; --color-dg-red-700: #1F261F;
+  --color-neutral-6: #F6F3ED; --color-neutral-8: #EFEAE1; --color-neutral-10: #E5DDD0; --color-neutral-20: #D3C9B8; --color-neutral-30: #857A64; --color-neutral-40: #6F6A5C;
+  --color-neutral-60: #555C50; --color-neutral-70: #454A41; --color-neutral-80: #363932; --color-neutral-90: #262824;
+  --color-danger-50: #F3E2DC; --color-danger-100: #E9C9BF; --color-danger-500: #9A3324; --color-danger-600: #7F2A1D;
+  --color-success-50: #DDE3D8; --color-success-500: #343F35;
+  --color-warning-50: #F2E8CC; --color-warning-500: #7A5A12;
+  --color-accent-purple: #6E5A38; --color-purple-50: #F1EBDD; --color-purple-200: #D9C9A8;
+  --color-green-200: #C9CFC2; --color-orange-200: #E3D3A4; --color-red-200: #E9C9BF; --color-red-700: #7F2A1D; --color-red-800: #6A2318;
+  --shadow-fluent-2: 0 0 0 1px rgb(38 40 36 / 0.04), 0 1px 2px rgb(38 40 36 / 0.08);
+  --shadow-fluent-8: 0 0 2px rgb(38 40 36 / 0.1), 0 4px 8px rgb(38 40 36 / 0.1);
+  --shadow-brand-glow: 0 0 0 1px rgb(38 40 36 / 0.04), 0 1px 2px rgb(38 40 36 / 0.08);
+  --text-xs: var(--fs-12); --text-sm: var(--fs-14); --text-base: var(--fs-16); --text-lg: var(--fs-18); --text-xl: var(--fs-20); --text-2xl: var(--fs-24);
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  html { @apply font-sans; scroll-padding-top: 88px; }
+  body { background: var(--surface); color: var(--text); font-size: var(--fs-16); line-height: 1.65; -webkit-font-smoothing: antialiased; }
+  body.admin { font-size: var(--fs-14); line-height: 1.5; }
+}
+
+/* iOS never zooms on focus */
+@media (max-width: 767px) {
+  input:not([type=checkbox]):not([type=radio]), select, textarea { font-size: max(1rem, 1em); }
+}
