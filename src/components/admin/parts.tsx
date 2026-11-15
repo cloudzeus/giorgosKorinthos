@@ -45,6 +45,16 @@ const STATUS = {
   BLOCKED: { variant: "neutral", label: "Κλειστές ημερομηνίες" },
   PUBLISHED: { variant: "success", label: "Δημοσιευμένο" },
   DRAFT: { variant: "warning", label: "Πρόχειρο, θέλει έγκριση" },
+  OPEN: { variant: "warning", label: "Ανοιχτό" },
+  IN_PROGRESS: { variant: "info", label: "Σε εξέλιξη" },
+  DONE: { variant: "success", label: "Ολοκληρώθηκε" },
+  CLEANING: { variant: "neutral", label: "Καθαριότητα" },
+  GUEST_REQUEST: { variant: "info", label: "Αίτημα πελάτη" },
+  MAINTENANCE: { variant: "neutral", label: "Συντήρηση" },
+  DAMAGE: { variant: "danger", label: "Ζημιά" },
+  LOW: { variant: "neutral", label: "Χαμηλή" },
+  NORMAL: { variant: "neutral", label: "Κανονική" },
+  HIGH: { variant: "danger", label: "Επείγον" },
 } as const;
 
 export function Status({ value }: { value: keyof typeof STATUS }) {

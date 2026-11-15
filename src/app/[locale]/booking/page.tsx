@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { CircleAlert, Clock, Lock } from "lucide-react";
 import { db } from "@/lib/db";
-import { DEPOSIT_PERCENT, HOLD_MINUTES, nightsBetween, parseDay, takenUnitIds, validStay } from "@/lib/booking";
+import { DEPOSIT_PERCENT, HOLD_MINUTES, nightsBetween, parseDay, stayPrice, takenUnitIds, validStay } from "@/lib/booking";
 import { alternates, getDict, longDate, money } from "@/lib/i18n";
 import { fmt, img, unitPhotos, type UnitSlug } from "@/lib/site";
 import { BookingBar, PageIntro } from "@/components/site/parts";
@@ -9,14 +9,14 @@ import { SelectionSummary } from "./summary";
 import { reserve } from "./actions";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/booking">): Promise<Metadata> {
-  const { locale, t } = getDict((await params).locale);
+  const { locale, t } = await getDict((await params).locale);
   return { title: t.booking.eyebrow, description: t.booking.lead, alternates: alternates("/booking", locale), robots: { index: false } };
 }
 
 const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
 export default async function BookingPage({ params, searchParams }: PageProps<"/[locale]/booking">) {
-  const { locale, t } = getDict((await params).locale);
+  const { locale, t } = await getDict((await params).locale);
   const query = await searchParams;
   const b = t.booking;
   const checkIn = parseDay(one(query.in));
@@ -28,7 +28,7 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
   const errorKey = one(query.error) as keyof typeof b.errors | undefined;
 
   const nights = valid ? nightsBetween(checkIn, checkOut) : 0;
-  const [units, taken] = valid ? await Promise.all([db.unit.findMany({ where: { active: true }, orderBy: { sort: "asc" } }), takenUnitIds(checkIn, checkOut)]) : [[], new Set<string>()];
+  const [units, taken] = valid ? await Promise.all([db.unit.findMany({ where: { active: true }, orderBy: { sort: "asc" }, include: { rates: true } }), takenUnitIds(checkIn, checkOut)]) : [[], new Set<string>()];
   const free = units.filter((unit) => !taken.has(unit.id));
   const step = valid ? 2 : 1;
 
@@ -61,7 +61,7 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
               {errorKey && b.errors[errorKey] ? (
                 <p className="ep-note ep-note--danger" role="alert">
                   <CircleAlert aria-hidden="true" strokeWidth={1.5} />
-                  {fmt(b.errors[errorKey], { n: units.reduce((sum, unit) => sum + unit.capacity, 0) })}
+                  {fmt(b.errors[errorKey], { n: errorKey === "minNights" ? Number(one(query.n)) || 2 : units.reduce((sum, unit) => sum + unit.capacity, 0) })}
                 </p>
               ) : null}
 
@@ -72,15 +72,16 @@ export default async function BookingPage({ params, searchParams }: PageProps<"/
                   const slug = unit.slug as UnitSlug;
                   const off = taken.has(unit.id);
                   const photo = unitPhotos[slug]?.[0];
+                  const total = stayPrice(unit.priceCents, unit.rates, checkIn, checkOut).totalCents;
                   return (
                     <label key={unit.id} className={`ep-unit${off ? " ep-unit--off" : ""}`}>
-                      <input type="checkbox" name="unit" value={unit.id} disabled={off} data-total={unit.priceCents * nights} data-capacity={unit.capacity} />
+                      <input type="checkbox" name="unit" value={unit.id} disabled={off} data-total={total} data-capacity={unit.capacity} />
                       {photo ? <img src={img(photo.name)} alt="" loading="lazy" /> : <span />}
                       <span className="ep-stack" style={{ gap: "var(--space-1)" }}>
                         <span className="ep-unit__name">{t.units[slug]?.name ?? unit.slug}</span>
                         <span className="ep-unit__meta">
                           <span>{unit.building === "A" ? t.rooms.buildingA : t.rooms.buildingB} · {fmt(b.sleeps, { n: unit.capacity })} · {t.units[slug]?.beds}</span>
-                          <span>{off ? b.unavailable : <><strong style={{ color: "var(--text)" }}>{money(unit.priceCents * nights, locale)}</strong> · {money(unit.priceCents, locale)} {b.perNight}</>}</span>
+                          <span>{off ? b.unavailable : <><strong style={{ color: "var(--text)" }}>{money(total, locale)}</strong> · {money(Math.round(total / nights), locale)} {b.perNight}</>}</span>
                         </span>
                       </span>
                     </label>

@@ -27,14 +27,14 @@ export default async function MediaPage({ searchParams }: PageProps<"/admin/medi
   const kind = query.kind === "VIDEO" ? "VIDEO" : query.kind === "IMAGE" ? "IMAGE" : undefined;
   const assets = await db.mediaAsset.findMany({ where: kind ? { kind } : undefined, orderBy: { createdAt: "desc" }, take: 300 });
   const write = can(user.role, "media.write");
-  const ready = bunnyConfigured();
+  const ready = await bunnyConfigured();
   const local = assets.filter((asset) => !asset.url.startsWith("http")).length;
   const slotLabel = (id: string | null) => SLOTS.find((slot) => slot.id === id)?.label;
 
   return (
     <>
       <PageHead title="Βιβλιοθήκη μέσων" text="Φωτογραφίες και βίντεο του site. Αποθηκεύονται στο Bunny CDN. Για να εμφανιστεί ένα αρχείο στο site, ορίστε του «Θέση» από την Επεξεργασία." />
-      {!ready ? <Alert bad>Το Bunny CDN δεν είναι ρυθμισμένο, οπότε δεν μπορείτε να ανεβάσετε αρχεία. Συμπληρώστε τα BUNNY_STORAGE_ZONE, BUNNY_STORAGE_KEY και BUNNY_CDN_URL στο .env.</Alert> : null}
+      {!ready ? <Alert bad>Το Bunny CDN δεν είναι ρυθμισμένο, οπότε δεν μπορείτε να ανεβάσετε αρχεία. Συμπληρώστε τα στοιχεία του στις Ρυθμίσεις.</Alert> : null}
       {local ? <Alert bad>{local} αρχεία βρίσκονται μόνο σε αυτόν τον υπολογιστή και όχι στο CDN. Μετά τη ρύθμιση του Bunny τρέξτε ξανά το scripts/import-media.mjs για να ανέβουν.</Alert> : null}
       {query.ok ? <Alert>Οι αλλαγές αποθηκεύτηκαν.</Alert> : null}
       {query.error ? <Alert bad>Συμπληρώστε τίτλο και έγκυρη θέση.</Alert> : null}

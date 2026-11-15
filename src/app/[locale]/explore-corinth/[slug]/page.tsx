@@ -15,14 +15,14 @@ const load = cache((slug: string, locale: string) =>
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale: raw, slug } = await params;
-  const { locale } = getDict(raw);
+  const { locale } = await getDict(raw);
   const text = (await load(slug, locale))?.translations[0];
   return text ? { title: text.metaTitle, description: text.metaDescription, alternates: alternates(`/explore-corinth/${slug}`, locale), openGraph: { type: "article", title: text.metaTitle, description: text.metaDescription } } : {};
 }
 
 export default async function ArticlePage({ params }: Props) {
   const { locale: raw, slug } = await params;
-  const { locale, t } = getDict(raw);
+  const { locale, t } = await getDict(raw);
   const article = await load(slug, locale);
   const text = article?.translations[0];
   if (!article || !text) notFound();

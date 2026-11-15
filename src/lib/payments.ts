@@ -1,6 +1,7 @@
 import { confirmPaid } from "./booking";
-import { getDict, longDate, money, type Locale, isLocale } from "./i18n";
-import { sendMail } from "./mail";
+import { longDate, money } from "./i18n";
+import { sendBookingEmail } from "./email";
+import { notifyAddress, sendMail } from "./mail";
 import { fmt } from "./site";
 import { getTransaction } from "./viva";
 
@@ -14,27 +15,12 @@ export async function settleTransaction(transactionId: string): Promise<string |
   if (!transaction?.paid) return null;
   const reservation = await confirmPaid(transaction.orderCode, transactionId, transaction.amountCents);
   if (reservation) {
-    const locale: Locale = isLocale(reservation.locale) ? reservation.locale : "en";
-    const { t } = getDict(locale);
-    const c = t.booking.confirm;
-    const rooms = reservation.units.map((row) => t.units[row.unit.slug as keyof typeof t.units]?.name ?? row.unit.slug).join(", ");
-    const lines = [
-      c.text,
-      "",
-      `${c.code}: ${reservation.code}`,
-      `${c.dates}: ${longDate(reservation.checkIn, locale)} - ${longDate(reservation.checkOut, locale)}`,
-      `${c.rooms}: ${rooms}`,
-      `${c.paid}: ${money(reservation.dueCents, locale)}`,
-      ...(reservation.totalCents > reservation.dueCents ? [`${c.balance}: ${money(reservation.totalCents - reservation.dueCents, locale)}`] : []),
-      "",
-      "Ephyria Lux",
-      t.contact.address,
-    ];
+    const names = reservation.units.map((row) => row.unit.slug.toUpperCase()).join(", ");
     await Promise.all([
-      sendMail(reservation.guestEmail, `${c.eyebrow} ${reservation.code}`, lines.join("\n")),
-      sendMail(process.env.MAIL_NOTIFY ?? "", `Νέα κράτηση ${reservation.code}`, fmt("{name} ({email}, {phone})\n{in} έως {out}\n{rooms}\nΠληρώθηκε: {paid}", {
+      sendBookingEmail("confirm", reservation, transaction.amountCents),
+      sendMail(await notifyAddress(), `Νέα κράτηση ${reservation.code}`, fmt("{name} ({email}, {phone})\n{in} έως {out}\nΒίλα: {rooms}\nΠληρώθηκε: {paid}", {
         name: reservation.guestName, email: reservation.guestEmail, phone: reservation.guestPhone ?? "-",
-        in: longDate(reservation.checkIn, "el"), out: longDate(reservation.checkOut, "el"), rooms, paid: money(reservation.dueCents, "el"),
+        in: longDate(reservation.checkIn, "el"), out: longDate(reservation.checkOut, "el"), rooms: names, paid: money(reservation.dueCents, "el"),
       })),
     ]);
   }

@@ -1,4 +1,4 @@
-import { Prisma, type Reservation } from "@prisma/client";
+import { Prisma, type RatePeriod, type Reservation } from "@prisma/client";
 import { randomBytes } from "node:crypto";
 import { db } from "./db";
 
@@ -14,6 +14,7 @@ export function parseDay(value: string | undefined | null): Date | null {
 
 export const dayString = (date: Date) => date.toISOString().slice(0, 10);
 export const nightsBetween = (checkIn: Date, checkOut: Date) => Math.round((checkOut.getTime() - checkIn.getTime()) / 86_400_000);
+export const addDays = (date: Date, days: number) => new Date(date.getTime() + days * 86_400_000);
 
 /** A stay is valid when it starts today or later, lasts 1 to 60 nights. */
 export function validStay(checkIn: Date | null, checkOut: Date | null, today = new Date()): checkIn is Date {
@@ -22,12 +23,22 @@ export function validStay(checkIn: Date | null, checkOut: Date | null, today = n
   return nights >= 1 && nights <= 60 && dayString(checkIn) >= dayString(today);
 }
 
-/** Total for the stay and the part charged online. Money stays in integer cents. */
-export function quote(nightlyCents: number[], nights: number, depositPercent = DEPOSIT_PERCENT) {
-  const totalCents = nightlyCents.reduce((sum, price) => sum + price, 0) * nights;
-  const dueCents = Math.round((totalCents * depositPercent) / 100);
-  return { totalCents, dueCents };
+type Rate = Pick<RatePeriod, "from" | "to" | "priceCents" | "minNights">;
+
+/**
+ * Price of a stay in one villa. Each night costs the seasonal rate that covers it, or the base price.
+ * When periods overlap, the one that starts latest wins. minNights comes from the arrival night's period.
+ */
+export function stayPrice(baseCents: number, rates: Rate[], checkIn: Date, checkOut: Date) {
+  const ordered = [...rates].sort((a, b) => b.from.getTime() - a.from.getTime());
+  const rateFor = (night: Date) => ordered.find((rate) => rate.from <= night && night <= rate.to);
+  let totalCents = 0;
+  for (let night = checkIn; night < checkOut; night = addDays(night, 1)) totalCents += rateFor(night)?.priceCents ?? baseCents;
+  return { totalCents, minNights: rateFor(checkIn)?.minNights ?? 1 };
 }
+
+/** The part of a total charged online. Money stays in integer cents. */
+export const depositOf = (totalCents: number, depositPercent = DEPOSIT_PERCENT) => Math.round((totalCents * depositPercent) / 100);
 
 /** Reservations that occupy a unit for the given dates: confirmed, blocked, or a hold that has not expired. */
 const occupying = (checkIn: Date, checkOut: Date, now = new Date()): Prisma.ReservationWhereInput => ({
@@ -36,13 +47,19 @@ const occupying = (checkIn: Date, checkOut: Date, now = new Date()): Prisma.Rese
   OR: [{ status: { in: ["CONFIRMED", "BLOCKED"] } }, { status: "PENDING", holdExpiresAt: { gt: now } }],
 });
 
-/** Ids of units that are taken for the dates. */
-export async function takenUnitIds(checkIn: Date, checkOut: Date, tx: Prisma.TransactionClient = db) {
-  const rows = await tx.reservationUnit.findMany({ where: { reservation: occupying(checkIn, checkOut) }, select: { unitId: true } });
+/** Ids of units that are taken for the dates. `exceptId` ignores one reservation (when editing it). */
+export async function takenUnitIds(checkIn: Date, checkOut: Date, tx: Prisma.TransactionClient = db, exceptId?: string) {
+  const rows = await tx.reservationUnit.findMany({
+    where: { reservation: { ...occupying(checkIn, checkOut), ...(exceptId ? { NOT: { id: exceptId } } : {}) } },
+    select: { unitId: true },
+  });
   return new Set(rows.map((row) => row.unitId));
 }
 
 export class UnitsTakenError extends Error {}
+export class MinNightsError extends Error {
+  constructor(public nights: number) { super("min nights"); }
+}
 
 export interface HoldInput {
   unitIds: string[];
@@ -59,51 +76,90 @@ export interface HoldInput {
   source?: "WEB" | "MANUAL";
 }
 
-/**
- * Reserve units for the dates. The availability check and the insert run in one serializable
- * transaction, so two guests cannot take the same room for overlapping dates.
- */
-export async function createReservation(input: HoldInput): Promise<Reservation> {
-  const run = () =>
-    db.$transaction(
-      async (tx) => {
-        const taken = await takenUnitIds(input.checkIn, input.checkOut, tx);
-        if (input.unitIds.some((id) => taken.has(id))) throw new UnitsTakenError();
-        const units = await tx.unit.findMany({ where: { id: { in: input.unitIds }, active: true } });
-        if (units.length !== input.unitIds.length || !units.length) throw new UnitsTakenError();
-        const status = input.status ?? "PENDING";
-        const priced = quote(units.map((unit) => unit.priceCents), nightsBetween(input.checkIn, input.checkOut));
-        return tx.reservation.create({
-          data: {
-            code: `EL-${randomBytes(6).toString("hex").toUpperCase()}`,
-            status,
-            source: input.source ?? "WEB",
-            checkIn: input.checkIn,
-            checkOut: input.checkOut,
-            adults: input.adults,
-            children: input.children,
-            guestName: input.guestName,
-            guestEmail: input.guestEmail,
-            guestPhone: input.guestPhone || null,
-            notes: input.notes || null,
-            locale: input.locale,
-            totalCents: status === "BLOCKED" ? 0 : priced.totalCents,
-            dueCents: status === "BLOCKED" ? 0 : priced.dueCents,
-            holdExpiresAt: status === "PENDING" ? new Date(Date.now() + HOLD_MINUTES * 60_000) : null,
-            consentAt: input.source === "MANUAL" ? null : new Date(),
-            units: { create: units.map((unit) => ({ unitId: unit.id, priceCents: unit.priceCents })) },
-          },
-        });
-      },
-      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
-    );
+/** Availability check and prices for a set of villas, inside the caller's transaction. */
+async function priceUnits(tx: Prisma.TransactionClient, unitIds: string[], checkIn: Date, checkOut: Date, exceptId?: string) {
+  const taken = await takenUnitIds(checkIn, checkOut, tx, exceptId);
+  if (unitIds.some((id) => taken.has(id))) throw new UnitsTakenError();
+  const units = await tx.unit.findMany({ where: { id: { in: unitIds }, active: true }, include: { rates: true } });
+  if (units.length !== unitIds.length || !units.length) throw new UnitsTakenError();
+  const nights = nightsBetween(checkIn, checkOut);
+  const priced = units.map((unit) => ({ unit, ...stayPrice(unit.priceCents, unit.rates, checkIn, checkOut) }));
+  return { priced, nights, totalCents: priced.reduce((sum, row) => sum + row.totalCents, 0), minNights: Math.max(...priced.map((row) => row.minNights)) };
+}
+
+const serializable = { isolationLevel: Prisma.TransactionIsolationLevel.Serializable };
+
+/** Run a booking transaction; on a serialization conflict with a concurrent booking, one retry settles who won. */
+async function withRetry<T>(run: () => Promise<T>): Promise<T> {
   try {
     return await run();
   } catch (error) {
-    // P2034: serialization conflict with a concurrent booking. One retry settles who won.
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") return run();
     throw error;
   }
+}
+
+/**
+ * Reserve villas for the dates. The availability check and the insert run in one serializable
+ * transaction, so two guests cannot take the same villa for overlapping dates.
+ */
+export function createReservation(input: HoldInput): Promise<Reservation> {
+  return withRetry(() =>
+    db.$transaction(async (tx) => {
+      const { priced, nights, totalCents, minNights } = await priceUnits(tx, input.unitIds, input.checkIn, input.checkOut);
+      const status = input.status ?? "PENDING";
+      // Guests booking online must respect the season's minimum stay; staff may override it.
+      if (input.source !== "MANUAL" && nights < minNights) throw new MinNightsError(minNights);
+      const email = input.guestEmail.trim().toLowerCase();
+      const guest = email && status !== "BLOCKED"
+        ? await tx.guest.upsert({
+            where: { email },
+            update: { name: input.guestName, ...(input.guestPhone ? { phone: input.guestPhone } : {}) },
+            create: { email, name: input.guestName, phone: input.guestPhone || null, language: input.locale },
+          })
+        : null;
+      return tx.reservation.create({
+        data: {
+          code: `EL-${randomBytes(6).toString("hex").toUpperCase()}`,
+          status,
+          source: input.source ?? "WEB",
+          checkIn: input.checkIn,
+          checkOut: input.checkOut,
+          adults: input.adults,
+          children: input.children,
+          guestName: input.guestName,
+          guestEmail: email,
+          guestPhone: input.guestPhone || null,
+          notes: input.notes || null,
+          locale: input.locale,
+          guestId: guest?.id,
+          totalCents: status === "BLOCKED" ? 0 : totalCents,
+          dueCents: status === "BLOCKED" ? 0 : depositOf(totalCents),
+          holdExpiresAt: status === "PENDING" ? new Date(Date.now() + HOLD_MINUTES * 60_000) : null,
+          consentAt: input.source === "MANUAL" ? null : new Date(),
+          units: { create: priced.map((row) => ({ unitId: row.unit.id, priceCents: Math.round(row.totalCents / nights) })) },
+        },
+      });
+    }, serializable),
+  );
+}
+
+/** Move a reservation to other dates and/or villas, re-checking availability and re-pricing it. */
+export function rescheduleReservation(id: string, unitIds: string[], checkIn: Date, checkOut: Date, reprice: boolean): Promise<Reservation> {
+  return withRetry(() =>
+    db.$transaction(async (tx) => {
+      const { priced, nights, totalCents } = await priceUnits(tx, unitIds, checkIn, checkOut, id);
+      await tx.reservationUnit.deleteMany({ where: { reservationId: id } });
+      return tx.reservation.update({
+        where: { id },
+        data: {
+          checkIn, checkOut,
+          ...(reprice ? { totalCents } : {}),
+          units: { create: priced.map((row) => ({ unitId: row.unit.id, priceCents: Math.round(row.totalCents / nights) })) },
+        },
+      });
+    }, serializable),
+  );
 }
 
 /**
@@ -121,5 +177,7 @@ export async function confirmPaid(orderCode: string, transactionId: string, amou
     where: { id: reservation.id, status: "PENDING" },
     data: { status: "CONFIRMED", vivaTransactionId: transactionId, holdExpiresAt: null },
   });
-  return updated.count ? db.reservation.findUnique({ where: { id: reservation.id }, include: { units: { include: { unit: true } } } }) : null;
+  if (!updated.count) return null;
+  await db.payment.create({ data: { reservationId: reservation.id, amountCents, method: "VIVA", note: transactionId } });
+  return db.reservation.findUnique({ where: { id: reservation.id }, include: { units: { include: { unit: true } } } });
 }

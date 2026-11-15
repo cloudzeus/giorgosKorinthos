@@ -7,12 +7,12 @@ import { Botanical, Stagger } from "@/components/site/fx";
 import { PageIntro, PoolImage } from "@/components/site/parts";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/experiences">): Promise<Metadata> {
-  const { locale, t } = getDict((await params).locale);
+  const { locale, t } = await getDict((await params).locale);
   return { title: t.nav.experiences, description: t.experiences.lead, alternates: alternates("/experiences", locale) };
 }
 
 export default async function ExperiencesPage({ params }: PageProps<"/[locale]/experiences">) {
-  const { t } = getDict((await params).locale);
+  const { t } = await getDict((await params).locale);
   return (
     <>
       <PageIntro eyebrow={t.experiences.eyebrow} lines={t.experiences.lines} lead={t.experiences.lead} />

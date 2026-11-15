@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   const session = await auth();
   const user = session?.user as { id: string; role?: Role } | undefined;
   if (!user || !can(user.role, "media.write")) return NextResponse.json({ error: "Δεν έχετε δικαίωμα ανεβάσματος." }, { status: 403 });
-  if (!bunnyConfigured()) return NextResponse.json({ error: "Το Bunny CDN δεν είναι ρυθμισμένο. Συμπληρώστε τα BUNNY_* στο .env." }, { status: 503 });
+  if (!(await bunnyConfigured())) return NextResponse.json({ error: "Το Bunny CDN δεν είναι ρυθμισμένο. Συμπληρώστε τα BUNNY_* στο .env." }, { status: 503 });
 
   const type = TYPES[request.headers.get("content-type") ?? ""];
   const bytes = Number(request.headers.get("content-length"));
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     console.error("[media] upload failed:", error);
     return NextResponse.json({ error: "Το ανέβασμα στο Bunny απέτυχε. Δοκιμάστε ξανά." }, { status: 502 });
   }
-  const asset = await db.mediaAsset.create({ data: { kind: type.kind, path, url: cdnUrl(path), title: base, bytes } });
+  const asset = await db.mediaAsset.create({ data: { kind: type.kind, path, url: await cdnUrl(path), title: base, bytes } });
   await audit(user.id, "media.upload", "MediaAsset", asset.id);
   revalidatePath("/admin/media");
   return NextResponse.json({ ok: true, id: asset.id });

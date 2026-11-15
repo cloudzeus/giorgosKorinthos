@@ -10,12 +10,12 @@ import { ExploreConcierge } from "@/components/site/islands";
 import { PageHero } from "@/components/site/parts";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/explore-corinth">): Promise<Metadata> {
-  const { locale, t } = getDict((await params).locale);
+  const { locale, t } = await getDict((await params).locale);
   return { title: t.nav.explore, description: t.explore.pageLead, alternates: alternates("/explore-corinth", locale) };
 }
 
 export default async function ExplorePage({ params }: PageProps<"/[locale]/explore-corinth">) {
-  const { locale, t } = getDict((await params).locale);
+  const { locale, t } = await getDict((await params).locale);
   const posts = await db.article.findMany({ where: { status: "PUBLISHED" }, orderBy: { publishedAt: "desc" }, take: 30, include: { translations: { where: { locale } } } });
   const media = await slotMap();
   const rows = places.map((place) => {

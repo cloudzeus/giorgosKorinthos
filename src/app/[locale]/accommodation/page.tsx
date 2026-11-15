@@ -6,12 +6,12 @@ import { Botanical, Marquee, Ornament } from "@/components/site/fx";
 import { PageIntro, VillaBlock } from "@/components/site/parts";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/accommodation">): Promise<Metadata> {
-  const { locale, t } = getDict((await params).locale);
+  const { locale, t } = await getDict((await params).locale);
   return { title: t.nav.rooms, description: t.rooms.lead, alternates: alternates("/accommodation", locale) };
 }
 
 export default async function AccommodationPage({ params }: PageProps<"/[locale]/accommodation">) {
-  const { locale, t } = getDict((await params).locale);
+  const { locale, t } = await getDict((await params).locale);
   const units = await db.unit.findMany({ where: { active: true }, orderBy: { sort: "asc" } });
   return (
     <>

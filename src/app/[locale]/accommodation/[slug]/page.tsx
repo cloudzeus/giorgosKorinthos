@@ -12,14 +12,14 @@ type Props = PageProps<"/[locale]/accommodation/[slug]">;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale: raw, slug } = await params;
-  const { locale, t } = getDict(raw);
+  const { locale, t } = await getDict(raw);
   const copy = t.units[slug as UnitSlug];
   return copy ? { title: copy.name, description: copy.text, alternates: alternates(`/accommodation/${slug}`, locale) } : {};
 }
 
 export default async function VillaDetailPage({ params }: Props) {
   const { locale: raw, slug } = await params;
-  const { locale, t } = getDict(raw);
+  const { locale, t } = await getDict(raw);
   const unit = await db.unit.findFirst({ where: { slug, active: true } });
   const copy = t.units[slug as UnitSlug];
   const shots = unitPhotos[slug as UnitSlug];

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BedDouble, Euro, FileText, Mail } from "lucide-react";
+import { BedDouble, ConciergeBell, Euro, FileText, Mail, Sparkles, Wrench } from "lucide-react";
 import { can, requirePermission } from "@/auth";
 import { db } from "@/lib/db";
 import { dayString } from "@/lib/booking";
@@ -17,14 +17,17 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
   const end = new Date(today.getTime() + DAYS * 86_400_000);
   const monthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
 
-  const [units, stays, arrivals, month, drafts, inbox] = await Promise.all([
+  const [units, stays, arrivals, month, drafts, inbox, tickets] = await Promise.all([
     db.unit.count({ where: { active: true } }),
     db.reservation.findMany({ where: { status: { in: ["CONFIRMED", "BLOCKED"] }, checkIn: { lt: end }, checkOut: { gt: today } }, select: { checkIn: true, checkOut: true, status: true, _count: { select: { units: true } } } }),
     db.reservation.findMany({ where: { status: "CONFIRMED", checkIn: { gte: today } }, orderBy: { checkIn: "asc" }, take: 6, include: { units: { include: { unit: true } } } }),
     db.reservation.aggregate({ where: { status: "CONFIRMED", createdAt: { gte: monthStart } }, _sum: { totalCents: true }, _count: true }),
     db.article.count({ where: { status: "DRAFT" } }),
     db.inquiry.count({ where: { handled: false } }),
+    db.ticket.groupBy({ by: ["type"], where: { status: { in: ["OPEN", "IN_PROGRESS"] }, OR: [{ dueDate: null }, { dueDate: { lte: today } }] }, _count: true }),
   ]);
+  const due = (type: string) => tickets.find((row) => row.type === type)?._count ?? 0;
+  const issues = due("DAMAGE") + due("MAINTENANCE");
 
   // Rooms taken on each of the next 30 nights.
   const nights = Array.from({ length: DAYS }, (_, index) => {
@@ -69,6 +72,27 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
           <span className={`ad-stat__value ad-tone--${drafts ? "warn" : "good"}`}>{drafts}</span>
           <span className="ad-stat__note">{drafts ? "Γράφτηκαν αυτόματα και δεν φαίνονται στο site μέχρι να τα εγκρίνετε." : "Δεν υπάρχει πρόχειρο σε αναμονή."}</span>
           {can(user.role, "content.read") ? <Link href="/admin/content">{drafts ? "Διαβάστε και δημοσιεύστε" : "Περιεχόμενο"}</Link> : null}
+        </div>
+      </section>
+
+      <section className="ad-stats" aria-label="Σήμερα στο κτήμα">
+        <div className="ad-card ad-stat">
+          <span className="ad-stat__label"><Sparkles aria-hidden="true" strokeWidth={1.5} />Καθαρισμοί για σήμερα</span>
+          <span className={`ad-stat__value ad-tone--${due("CLEANING") ? "warn" : "good"}`}>{due("CLEANING")}</span>
+          <span className="ad-stat__note">{due("CLEANING") ? "Εκκρεμούν, μαζί με όσους έμειναν από προηγούμενες ημέρες." : "Όλοι οι καθαρισμοί έχουν γίνει."}</span>
+          {can(user.role, "ops.read") ? <Link href="/admin/ops?type=CLEANING">Άνοιγμα καθαριότητας</Link> : null}
+        </div>
+        <div className="ad-card ad-stat">
+          <span className="ad-stat__label"><ConciergeBell aria-hidden="true" strokeWidth={1.5} />Αιτήματα πελατών</span>
+          <span className={`ad-stat__value ad-tone--${due("GUEST_REQUEST") ? "warn" : "good"}`}>{due("GUEST_REQUEST")}</span>
+          <span className="ad-stat__note">{due("GUEST_REQUEST") ? "Οι επισκέπτες περιμένουν απάντηση." : "Κανένα αίτημα σε αναμονή."}</span>
+          {can(user.role, "ops.read") ? <Link href="/admin/ops?type=GUEST_REQUEST">Άνοιγμα αιτημάτων</Link> : null}
+        </div>
+        <div className="ad-card ad-stat">
+          <span className="ad-stat__label"><Wrench aria-hidden="true" strokeWidth={1.5} />Ζημιές και βλάβες</span>
+          <span className={`ad-stat__value ad-tone--${issues ? "bad" : "good"}`}>{issues}</span>
+          <span className="ad-stat__note">{issues ? "Ανοιχτές. Διορθώστε τις πριν την επόμενη άφιξη." : "Όλα λειτουργούν."}</span>
+          {can(user.role, "ops.read") ? <Link href="/admin/ops?type=ISSUES">Άνοιγμα ζημιών</Link> : null}
         </div>
       </section>
 

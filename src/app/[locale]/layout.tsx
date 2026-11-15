@@ -7,6 +7,8 @@ import { contact, img } from "@/lib/site";
 import { LogoFull, LogoHorizontal, LogoMark, LogoWordmark } from "@/components/site/Logo";
 import { HeaderShell, MotionToggle, Providers, RouteTransition } from "@/components/site/motion-kit";
 import { Botanical, Cursor } from "@/components/site/fx";
+import { Consent } from "@/components/site/consent";
+import { getSettings } from "@/lib/settings";
 
 // Display: a high-contrast serif with Greek. Text and UI: Manrope.
 const noto = Noto_Serif_Display({ subsets: ["latin", "greek"], weight: ["300", "400"], style: ["normal", "italic"], variable: "--font-noto", display: "swap" });
@@ -16,7 +18,7 @@ const manrope = Manrope({ subsets: ["latin", "greek"], weight: ["300", "400", "5
 // Admin actions and the content cron call revalidatePath to refresh them.
 
 export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Promise<Metadata> {
-  const { locale, t } = getDict((await params).locale);
+  const { locale, t } = await getDict((await params).locale);
   return {
     metadataBase: new URL(process.env.APP_URL ?? "http://localhost:3000"),
     title: { default: t.meta.title, template: "%s | Ephyria Lux" },
@@ -30,8 +32,9 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
 const SEEN = `try{if(sessionStorage.getItem("ep-seen"))document.documentElement.classList.add("is-returning");sessionStorage.setItem("ep-seen","1")}catch(e){}`;
 
 export default async function LocaleLayout({ children, params }: LayoutProps<"/[locale]">) {
-  const { locale, t } = getDict((await params).locale);
+  const { locale, t } = await getDict((await params).locale);
   const base = `/${locale}`;
+  const settings = await getSettings();
   const items = [
     { href: `${base}/villa`, label: t.nav.villa },
     { href: `${base}/accommodation`, label: t.nav.rooms },
@@ -75,6 +78,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                   <ul>
                     {items.slice(3).map((item) => <li key={item.href}><Link href={item.href}>{item.label}</Link></li>)}
                     <li><Link href={`${base}/booking`}>{t.nav.book}</Link></li>
+                    <li><Link href={`${base}/stay`}>{t.stay.eyebrow}</Link></li>
                   </ul>
                 </nav>
                 <div>
@@ -94,6 +98,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
             </div>
           </footer>
           <Cursor />
+          <Consent ids={{ ga: settings.GA_MEASUREMENT_ID, ads: settings.GOOGLE_ADS_ID, gtm: settings.GTM_ID }} labels={t.cookie} />
         </Providers>
       </body>
     </html>

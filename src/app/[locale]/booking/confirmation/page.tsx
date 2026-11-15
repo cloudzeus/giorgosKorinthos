@@ -5,11 +5,13 @@ import { db } from "@/lib/db";
 import { getDict, longDate, money } from "@/lib/i18n";
 import { fmt, type UnitSlug } from "@/lib/site";
 import { PageIntro } from "@/components/site/parts";
+import { BookingConversion } from "@/components/site/consent";
+import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = { robots: { index: false } };
 
 export default async function ConfirmationPage({ params, searchParams }: PageProps<"/[locale]/booking/confirmation">) {
-  const { locale, t } = getDict((await params).locale);
+  const { locale, t } = await getDict((await params).locale);
   const code = String((await searchParams).code ?? "");
   const c = t.booking.confirm;
   const reservation = /^EL-[0-9A-F]{8,12}$/.test(code)
@@ -21,6 +23,7 @@ export default async function ConfirmationPage({ params, searchParams }: PagePro
     return <PageIntro eyebrow={t.booking.eyebrow} lines={[c.notFound]} />;
   }
   // Mask the address: this page is reachable by anyone who has the code.
+  const settings = await getSettings();
   const masked = reservation.guestEmail.replace(/^(.).*(@.*)$/, "$1***$2");
   return (
     <>
@@ -37,7 +40,9 @@ export default async function ConfirmationPage({ params, searchParams }: PagePro
           {confirmed ? <div className="ep-sum__total"><dt>{c.paid}</dt><dd>{money(reservation.dueCents, locale)}</dd></div> : null}
           {confirmed && reservation.totalCents > reservation.dueCents ? <div><dt>{c.balance}</dt><dd>{money(reservation.totalCents - reservation.dueCents, locale)}</dd></div> : null}
         </dl>
+        {confirmed ? <p className="mr-hint"><Link href={`/${locale}/stay?code=${reservation.code}`}>{t.stay.eyebrow}: {t.stay.lines.join(" ")}</Link></p> : null}
         <div><Link className="mr-btn mr-btn--secondary" href={`/${locale}`}>{c.home}</Link></div>
+        {confirmed ? <BookingConversion code={reservation.code} value={reservation.totalCents / 100} ads={settings.GOOGLE_ADS_ID} label={settings.GOOGLE_ADS_BOOKING_LABEL} /> : null}
       </section>
     </>
   );

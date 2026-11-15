@@ -1,4 +1,6 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
+import { db } from "./db";
 import en from "@/i18n/en";
 import el from "@/i18n/el";
 import de from "@/i18n/de";
@@ -12,10 +14,36 @@ const dictionaries: Record<Locale, Dict> = { el, en, de };
 
 export const isLocale = (value: string): value is Locale => (locales as readonly string[]).includes(value);
 
-/** Narrow the route param and load its dictionary, or 404. */
-export function getDict(locale: string): { locale: Locale; t: Dict } {
+/** Built-in texts, without CMS overrides. For code that must not wait on the database. */
+export const baseDict = (locale: Locale): Dict => dictionaries[locale];
+
+/** Every text of a dictionary as "dot.path" -> string. Arrays use their index: "hero.lines.0". */
+export function flatten(value: unknown, prefix = "", out: Record<string, string> = {}): Record<string, string> {
+  if (typeof value === "string") out[prefix] = value;
+  else if (value && typeof value === "object") for (const [key, child] of Object.entries(value)) flatten(child, prefix ? `${prefix}.${key}` : key, out);
+  return out;
+}
+
+/** A copy of the dictionary with the overrides applied. Unknown or non-text paths are ignored. */
+export function applyOverrides(dict: Dict, overrides: { key: string; value: string }[]): Dict {
+  if (!overrides.length) return dict;
+  const copy = structuredClone(dict) as Record<string, unknown>;
+  for (const { key, value } of overrides) {
+    const path = key.split(".");
+    let node: unknown = copy;
+    for (const part of path.slice(0, -1)) node = node && typeof node === "object" ? (node as Record<string, unknown>)[part] : undefined;
+    const last = path[path.length - 1];
+    if (node && typeof node === "object" && typeof (node as Record<string, unknown>)[last] === "string") (node as Record<string, unknown>)[last] = value;
+  }
+  return copy as Dict;
+}
+
+const overridesFor = cache((locale: Locale) => db.contentBlock.findMany({ where: { locale }, select: { key: true, value: true } }));
+
+/** Narrow the route param and load its texts (built-in dictionary + CMS overrides), or 404. */
+export async function getDict(locale: string): Promise<{ locale: Locale; t: Dict }> {
   if (!isLocale(locale)) notFound();
-  return { locale, t: dictionaries[locale] };
+  return { locale, t: applyOverrides(dictionaries[locale], await overridesFor(locale)) };
 }
 
 export const intlLocale: Record<Locale, string> = { el: "el-GR", en: "en-GB", de: "de-DE" };

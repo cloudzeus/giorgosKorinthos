@@ -9,7 +9,7 @@ import { ArchReveal, AutoVideo, Botanical, CountUp, Frame, HorizontalScroll, Mar
 import { BookingBar, HeroTitle, PoolImage, VillaBlock } from "@/components/site/parts";
 
 export default async function Home({ params }: PageProps<"/[locale]">) {
-  const { locale, t } = getDict((await params).locale);
+  const { locale, t } = await getDict((await params).locale);
   const base = `/${locale}`;
   const [media, units, posts] = await Promise.all([
     slotMap(),

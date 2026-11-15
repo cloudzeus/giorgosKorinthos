@@ -2,19 +2,33 @@
 // Flow: OAuth2 token -> create payment order -> redirect the guest to Viva -> verify the transaction
 // by asking Viva's API (never trust the redirect or the webhook body on their own).
 
-const demo = process.env.VIVA_ENV !== "production";
-const HOSTS = demo
-  ? { accounts: "https://demo-accounts.vivapayments.com", api: "https://demo-api.vivapayments.com", web: "https://demo.vivapayments.com" }
-  : { accounts: "https://accounts.vivapayments.com", api: "https://api.vivapayments.com", web: "https://www.vivapayments.com" };
+import { getSettings } from "./settings";
 
-export const vivaConfigured = () => Boolean(process.env.VIVA_CLIENT_ID && process.env.VIVA_CLIENT_SECRET && process.env.VIVA_SOURCE_CODE);
+async function config() {
+  const s = await getSettings();
+  const demo = s.VIVA_ENV !== "production";
+  return {
+    ...s,
+    hosts: demo
+      ? { accounts: "https://demo-accounts.vivapayments.com", api: "https://demo-api.vivapayments.com", web: "https://demo.vivapayments.com" }
+      : { accounts: "https://accounts.vivapayments.com", api: "https://api.vivapayments.com", web: "https://www.vivapayments.com" },
+  };
+}
 
-let cached: { token: string; expires: number } | null = null;
+export async function vivaConfigured() {
+  const c = await config();
+  return Boolean(c.VIVA_CLIENT_ID && c.VIVA_CLIENT_SECRET && c.VIVA_SOURCE_CODE);
+}
+
+// Keyed by client id and environment, so changing the settings never reuses an old token.
+let cached: { id: string; token: string; expires: number } | null = null;
 
 async function accessToken(): Promise<string> {
-  if (cached && cached.expires > Date.now() + 60_000) return cached.token;
-  const basic = Buffer.from(`${process.env.VIVA_CLIENT_ID}:${process.env.VIVA_CLIENT_SECRET}`).toString("base64");
-  const res = await fetch(`${HOSTS.accounts}/connect/token`, {
+  const c = await config();
+  const id = `${c.hosts.accounts}|${c.VIVA_CLIENT_ID}`;
+  if (cached && cached.id === id && cached.expires > Date.now() + 60_000) return cached.token;
+  const basic = Buffer.from(`${c.VIVA_CLIENT_ID}:${c.VIVA_CLIENT_SECRET}`).toString("base64");
+  const res = await fetch(`${c.hosts.accounts}/connect/token`, {
     method: "POST",
     headers: { Authorization: `Basic ${basic}`, "Content-Type": "application/x-www-form-urlencoded" },
     body: "grant_type=client_credentials",
@@ -22,7 +36,7 @@ async function accessToken(): Promise<string> {
   });
   if (!res.ok) throw new Error(`Viva token: HTTP ${res.status}`);
   const data = (await res.json()) as { access_token: string; expires_in: number };
-  cached = { token: data.access_token, expires: Date.now() + data.expires_in * 1000 };
+  cached = { id, token: data.access_token, expires: Date.now() + data.expires_in * 1000 };
   return cached.token;
 }
 
@@ -39,6 +53,7 @@ export interface OrderInput {
 
 /** Create a payment order and return its order code and the checkout URL. */
 export async function createOrder(input: OrderInput): Promise<{ orderCode: string; checkoutUrl: string }> {
+  const { hosts: HOSTS, VIVA_SOURCE_CODE } = await config();
   const res = await fetch(`${HOSTS.api}/checkout/v2/orders`, {
     method: "POST",
     headers: { Authorization: `Bearer ${await accessToken()}`, "Content-Type": "application/json" },
@@ -49,7 +64,7 @@ export async function createOrder(input: OrderInput): Promise<{ orderCode: strin
       merchantTrns: input.reference,
       customer: { email: input.email, fullName: input.fullName, phone: input.phone || undefined, requestLang: { el: "el-GR", de: "de-DE" }[input.locale] ?? "en-GB" },
       paymentTimeout: input.timeoutSeconds, // the order dies with our hold, so a late payment cannot land on released dates
-      sourceCode: process.env.VIVA_SOURCE_CODE,
+      sourceCode: VIVA_SOURCE_CODE,
       preauth: false,
       allowRecurring: false,
       maxInstallments: 0,
@@ -72,6 +87,7 @@ export interface VivaTransaction {
 /** Ask Viva for the transaction. `paid` is true only for status F (finished). */
 export async function getTransaction(transactionId: string): Promise<VivaTransaction | null> {
   if (!/^[0-9a-f-]{36}$/i.test(transactionId)) return null;
+  const { hosts: HOSTS } = await config();
   const res = await fetch(`${HOSTS.api}/checkout/v2/transactions/${transactionId}`, {
     headers: { Authorization: `Bearer ${await accessToken()}` },
     cache: "no-store",
@@ -83,7 +99,8 @@ export async function getTransaction(transactionId: string): Promise<VivaTransac
 
 /** The key Viva expects back when it verifies the webhook URL (GET). */
 export async function webhookKey(): Promise<string> {
-  const basic = Buffer.from(`${process.env.VIVA_MERCHANT_ID}:${process.env.VIVA_API_KEY}`).toString("base64");
+  const { hosts: HOSTS, VIVA_MERCHANT_ID, VIVA_API_KEY } = await config();
+  const basic = Buffer.from(`${VIVA_MERCHANT_ID}:${VIVA_API_KEY}`).toString("base64");
   const res = await fetch(`${HOSTS.web}/api/messages/config/token`, { headers: { Authorization: `Basic ${basic}` }, cache: "no-store" });
   if (!res.ok) throw new Error(`Viva webhook key: HTTP ${res.status}`);
   return ((await res.json()) as { Key: string }).Key;

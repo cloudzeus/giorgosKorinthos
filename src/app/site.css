@@ -499,3 +499,9 @@ main { overflow-x: clip; }
 .ep-hero .ep-display em, .ep-cta .ep-display em, .ep-section--inverse .mr-h2 em, .ep-arch__body em, .ep-scene em { color: #E7D9BF; }
 .ep-marquee { background: linear-gradient(to bottom, transparent, rgba(229, 221, 208, 0.5), transparent); border: 0; }
 @media (prefers-reduced-motion: reduce) { .mr-btn::before { transition: none; } }
+
+/* Cookie choice */
+.ep-cookie { position: fixed; z-index: 80; left: 16px; right: 16px; bottom: 16px; max-width: 560px; margin-inline: auto 0; display: grid; gap: var(--space-4); padding: var(--space-6); background: var(--surface); color: var(--text); border: 1px solid var(--border-hairline); border-radius: var(--radius-md); box-shadow: 0 24px 60px -24px rgba(38, 40, 36, 0.4); }
+.ep-cookie p { margin: 0; font-size: var(--fs-14); line-height: 1.55; }
+.ep-cookie div { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: flex-end; }
+.ep-cookie .mr-btn { min-height: 44px; padding-inline: var(--space-6); }

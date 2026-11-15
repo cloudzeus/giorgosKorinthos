@@ -99,7 +99,7 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
                 return (
                   <TableRow key={row.id}>
                     <TableCell><strong>{day(row.checkIn)}</strong><br /><span className="ad-stat__note">έως {day(row.checkOut)} · {nightsBetween(row.checkIn, row.checkOut)} βρ.</span></TableCell>
-                    <TableCell>{row.guestName}<br /><span className="ad-stat__note">{[row.guestEmail, row.guestPhone].filter(Boolean).join(" · ") || row.code}</span></TableCell>
+                    <TableCell><Link href={`/admin/reservations/${row.id}`}><strong>{row.guestName}</strong></Link><br /><span className="ad-stat__note">{[row.guestEmail, row.guestPhone].filter(Boolean).join(" · ") || row.code}</span></TableCell>
                     <TableCell className="ad-hide">{row.units.map((item) => unitLabel(item.unit.slug)).join(", ")}</TableCell>
                     <TableCell>{row.status === "BLOCKED" ? "-" : <>{eur(row.totalCents)}{row.dueCents < row.totalCents && row.status === "CONFIRMED" ? <><br /><span className="ad-stat__note">υπόλοιπο {eur(row.totalCents - row.dueCents)}</span></> : null}</>}</TableCell>
                     <TableCell><Status value={expired ? "EXPIRED" : row.status} /></TableCell>

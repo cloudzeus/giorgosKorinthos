@@ -5,12 +5,12 @@ import { GalleryGrid } from "@/components/site/islands";
 import { PageIntro } from "@/components/site/parts";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/gallery">): Promise<Metadata> {
-  const { locale, t } = getDict((await params).locale);
+  const { locale, t } = await getDict((await params).locale);
   return { title: t.nav.gallery, description: t.gallery.lead, alternates: alternates("/gallery", locale) };
 }
 
 export default async function GalleryPage({ params }: PageProps<"/[locale]/gallery">) {
-  const { t } = getDict((await params).locale);
+  const { t } = await getDict((await params).locale);
   const cats = Object.keys(t.gallery.cats) as (keyof typeof t.gallery.cats)[];
   return (
     <>

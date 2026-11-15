@@ -9,6 +9,7 @@ import { db } from "@/lib/db";
 import { createReservation, parseDay, UnitsTakenError, nightsBetween } from "@/lib/booking";
 import { generateArticle } from "@/lib/ai";
 import { locales } from "@/lib/i18n";
+import { sendBookingEmail } from "@/lib/email";
 import { bunnyConfigured, bunnyDelete } from "@/lib/bunny";
 import { isSlot } from "@/lib/media";
 
@@ -28,7 +29,10 @@ export async function logout() {
 // ── Reservations ──────────────────────────────────────────────
 export async function setReservationStatus(id: string, status: "CONFIRMED" | "CANCELLED") {
   const user = await requirePermission("reservations.write");
-  await db.reservation.update({ where: { id }, data: { status, holdExpiresAt: null } });
+  const before = await db.reservation.findUnique({ where: { id }, select: { status: true } });
+  const reservation = await db.reservation.update({ where: { id }, data: { status, holdExpiresAt: null }, include: { units: { include: { unit: true } }, payments: true } });
+  // Tell the guest when a confirmed stay is cancelled. Blocked dates and expired holds have nobody to tell.
+  if (status === "CANCELLED" && before?.status === "CONFIRMED") await sendBookingEmail("cancel", reservation, reservation.payments.reduce((sum, row) => sum + row.amountCents, 0));
   await audit(user.id, `reservation.${status.toLowerCase()}`, "Reservation", id);
   revalidatePath("/admin", "layout");
 }
@@ -151,7 +155,7 @@ export async function deleteMedia(id: string) {
   const user = await requirePermission("media.write");
   const asset = await db.mediaAsset.findUnique({ where: { id } });
   if (!asset) return;
-  if (asset.url.startsWith("http") && bunnyConfigured()) {
+  if (asset.url.startsWith("http") && (await bunnyConfigured())) {
     await bunnyDelete(asset.path);
     if (asset.poster) await bunnyDelete(asset.path.replace(/\.mp4$/, ".webp"));
   }

@@ -4,13 +4,14 @@ import { CircleAlert, CircleCheck } from "lucide-react";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { alternates, getDict, isLocale } from "@/lib/i18n";
-import { sendMail } from "@/lib/mail";
+import { notifyAddress, sendMail } from "@/lib/mail";
+import { sendAckEmail } from "@/lib/email";
 import { contact as info, img } from "@/lib/site";
 import { ImageMaskReveal } from "@/components/ds/ImageMaskReveal";
 import { PageIntro } from "@/components/site/parts";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/contact">): Promise<Metadata> {
-  const { locale, t } = getDict((await params).locale);
+  const { locale, t } = await getDict((await params).locale);
   return { title: t.nav.contact, description: t.contact.lead, alternates: alternates("/contact", locale) };
 }
 
@@ -31,13 +32,16 @@ async function send(formData: FormData) {
   const parsed = schema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect(`/${locale}/contact?error=1`);
   const { name, email, phone, message } = parsed.data;
-  await db.inquiry.create({ data: { name, email, phone: phone || null, message, locale, consentAt: new Date() } });
-  await sendMail(process.env.MAIL_NOTIFY ?? "", `Νέο μήνυμα από ${name}`, `${name} <${email}> ${phone ?? ""}\n\n${message}`);
+  const address = email.toLowerCase();
+  const guest = await db.guest.upsert({ where: { email: address }, update: {}, create: { email: address, name, phone: phone || null, language: locale } });
+  await db.inquiry.create({ data: { name, email: address, phone: phone || null, message, locale, consentAt: new Date(), guestId: guest.id } });
+  await sendAckEmail("inquiry", address, name, locale, message);
+  await sendMail(await notifyAddress(), `Νέο μήνυμα από ${name}`, `${name} <${email}> ${phone ?? ""}\n\n${message}`);
   redirect(`/${locale}/contact?sent=1`);
 }
 
 export default async function ContactPage({ params, searchParams }: PageProps<"/[locale]/contact">) {
-  const { locale, t } = getDict((await params).locale);
+  const { locale, t } = await getDict((await params).locale);
   const query = await searchParams;
   const c = t.contact;
   return (

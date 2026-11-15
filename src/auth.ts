@@ -44,6 +44,12 @@ const PERMISSIONS = {
   "content.write": ["SUPER_ADMIN", "MANAGER", "EDITOR"],
   "media.read": ["SUPER_ADMIN", "MANAGER", "EDITOR", "AUDITOR"],
   "media.write": ["SUPER_ADMIN", "MANAGER", "EDITOR"],
+  "crm.read": ["SUPER_ADMIN", "MANAGER", "RESERVATIONS", "AUDITOR"],
+  "crm.write": ["SUPER_ADMIN", "MANAGER", "RESERVATIONS"],
+  "ops.read": ["SUPER_ADMIN", "MANAGER", "RESERVATIONS", "AUDITOR"],
+  "ops.write": ["SUPER_ADMIN", "MANAGER", "RESERVATIONS"],
+  "cms.write": ["SUPER_ADMIN", "MANAGER", "EDITOR"],
+  "settings.write": ["SUPER_ADMIN"],
   "messages.read": ["SUPER_ADMIN", "MANAGER", "RESERVATIONS", "AUDITOR"],
   "messages.write": ["SUPER_ADMIN", "MANAGER", "RESERVATIONS"],
 } as const satisfies Record<string, readonly Role[]>;

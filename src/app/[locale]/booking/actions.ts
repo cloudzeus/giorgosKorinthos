@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { createReservation, dayString, HOLD_MINUTES, parseDay, UnitsTakenError, validStay } from "@/lib/booking";
+import { createReservation, dayString, HOLD_MINUTES, MinNightsError, parseDay, UnitsTakenError, validStay } from "@/lib/booking";
 import { isLocale } from "@/lib/i18n";
 import { createOrder, vivaConfigured } from "@/lib/viva";
 
@@ -46,12 +46,13 @@ export async function reserve(formData: FormData) {
     });
   } catch (error) {
     if (error instanceof UnitsTakenError) redirect(back("taken"));
+    if (error instanceof MinNightsError) redirect(`${back("minNights")}`.replace("#rooms", `&n=${error.nights}#rooms`));
     throw error;
   }
 
   let checkoutUrl: string;
   try {
-    if (!vivaConfigured()) throw new Error("Viva credentials are not set");
+    if (!(await vivaConfigured())) throw new Error("Viva credentials are not set");
     const order = await createOrder({
       amountCents: reservation.dueCents,
       reference: reservation.code,

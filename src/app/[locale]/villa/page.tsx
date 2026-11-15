@@ -8,12 +8,12 @@ import { CountUp, Marquee, ParallaxCover, ScrubText, Stagger, Title } from "@/co
 import { PageHero, PoolImage } from "@/components/site/parts";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/villa">): Promise<Metadata> {
-  const { locale, t } = getDict((await params).locale);
+  const { locale, t } = await getDict((await params).locale);
   return { title: t.nav.villa, description: t.villa.lead, alternates: alternates("/villa", locale) };
 }
 
 export default async function VillaPage({ params }: PageProps<"/[locale]/villa">) {
-  const { locale, t } = getDict((await params).locale);
+  const { locale, t } = await getDict((await params).locale);
   const media = [
     { src: img("indoor-02"), alt: t.alt.living },
     { src: img("indoor-06"), alt: t.alt.kitchen },
