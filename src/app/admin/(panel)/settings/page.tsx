@@ -12,6 +12,7 @@ const REQUIRED: Record<string, string[]> = {
   "Bunny CDN": ["BUNNY_STORAGE_ZONE", "BUNNY_STORAGE_KEY", "BUNNY_CDN_URL"],
   Mailgun: ["MAILGUN_API_KEY", "MAILGUN_DOMAIN", "MAIL_FROM"],
   "Viva Payments": ["VIVA_CLIENT_ID", "VIVA_CLIENT_SECRET", "VIVA_SOURCE_CODE"],
+  "OpenRouter (AI)": ["AI_API_KEY", "AI_MODEL"],
   Google: [],
 };
 
@@ -52,6 +53,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/admin/s
                   <p className="ad-stat__note" style={{ margin: 0 }}>Στη Viva ορίστε: Success URL <code>{app}/api/viva/return</code>, Failure URL <code>{app}/api/viva/return?failed=1</code>, Webhook <code>{app}/api/viva/webhook</code>.</p>
                 ) : null}
                 {group.group === "Mailgun" ? <p className="ad-stat__note" style={{ margin: 0 }}>Δείτε πώς φαίνονται τα μηνύματα στις <Link href="/admin/emails">Προεπισκοπήσεις email</Link>.</p> : null}
+                {group.group === "OpenRouter (AI)" ? <p className="ad-stat__note" style={{ margin: 0 }}>Το όνομα του μοντέλου γράφεται όπως στο openrouter.ai/models. Δοκιμάστε το από τα <Link href="/admin/content">Άρθρα</Link>, «Νέο άρθρο».</p> : null}
                 {group.group === "Bunny CDN" ? <p className="ad-stat__note" style={{ margin: 0 }}>Μετά τη ρύθμιση, ανεβάστε αρχεία από τη <Link href="/admin/media">Βιβλιοθήκη μέσων</Link>.</p> : null}
               </div>
             </section>

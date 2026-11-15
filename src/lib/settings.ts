@@ -25,6 +25,12 @@ export const SETTINGS = [
     { key: "VIVA_API_KEY", label: "API key", secret: true },
     { key: "VIVA_SOURCE_CODE", label: "Κωδικός πηγής πληρωμής", placeholder: "1234" },
   ] },
+  { group: "OpenRouter (AI)", hint: "Αυτόματη συγγραφή άρθρων για την Κόρινθο στις τρεις γλώσσες.", fields: [
+    { key: "AI_API_KEY", label: "API key", secret: true },
+    { key: "AI_MODEL", label: "Μοντέλο", placeholder: "anthropic/claude-sonnet-5.5" },
+    { key: "AI_BASE_URL", label: "Διεύθυνση API", placeholder: "https://openrouter.ai/api/v1" },
+    { key: "AI_AUTO_PUBLISH", label: "Νέα άρθρα", options: [{ value: "false", label: "Μένουν πρόχειρα μέχρι να τα εγκρίνω" }, { value: "true", label: "Δημοσιεύονται αμέσως" }] },
+  ] },
   { group: "Google", hint: "Μετρήσεις επισκεψιμότητας και διαφημίσεων. Φορτώνουν μόνο αφού ο επισκέπτης δεχτεί τα cookies.", fields: [
     { key: "GA_MEASUREMENT_ID", label: "Google Analytics 4 (Measurement ID)", placeholder: "G-XXXXXXXXXX", pattern: "G-[A-Z0-9]{6,14}" },
     { key: "GOOGLE_ADS_ID", label: "Google Ads tag (Conversion ID)", placeholder: "AW-123456789", pattern: "AW-[0-9]{6,14}" },

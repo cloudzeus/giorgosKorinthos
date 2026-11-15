@@ -19,7 +19,7 @@ export default async function ContentPage({ searchParams }: PageProps<"/admin/co
   const query = await searchParams;
   const articles = await db.article.findMany({ orderBy: { createdAt: "desc" }, take: 100, include: { translations: true } });
   const write = can(user.role, "content.write");
-  const ready = aiConfigured();
+  const ready = await aiConfigured();
   return (
     <>
       <PageHead title="Περιεχόμενο" text="Άρθρα για την Κόρινθο και την ευρύτερη περιοχή. Γράφονται αυτόματα σε ελληνικά, αγγλικά και γερμανικά και εμφανίζονται στο «Γνωρίστε την Κόρινθο» μόλις τα δημοσιεύσετε.">
@@ -37,7 +37,7 @@ export default async function ContentPage({ searchParams }: PageProps<"/admin/co
         ) : null}
       </PageHead>
 
-      {!ready ? <Alert bad>Η αυτόματη συγγραφή δεν είναι ρυθμισμένη. Συμπληρώστε τα AI_API_KEY και AI_MODEL στο αρχείο .env.</Alert> : null}
+      {!ready ? <Alert bad>Η αυτόματη συγγραφή δεν είναι ρυθμισμένη. Συμπληρώστε API key και μοντέλο του OpenRouter στις Ρυθμίσεις.</Alert> : null}
       {query.ok === "generated" ? <Alert>Το άρθρο γράφτηκε. Διαβάστε το και δημοσιεύστε το από το μενού της γραμμής.</Alert> : null}
       {query.ok === "saved" ? <Alert>Οι αλλαγές αποθηκεύτηκαν.</Alert> : null}
       {typeof query.error === "string" ? <Alert bad>Δεν ολοκληρώθηκε: {query.error}</Alert> : null}

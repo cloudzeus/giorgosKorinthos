@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { db } from "./db";
 import { locales } from "./i18n";
+import { getSettings } from "./settings";
 
 /** Subjects the generator rotates through. When all are used, it asks the model for a fresh angle. */
 export const TOPICS = [
@@ -49,7 +50,10 @@ Rules:
 Reply with one JSON object and nothing else:
 {"slug":"...","el":{"title","excerpt","body","metaTitle","metaDescription"},"en":{...},"de":{...}}`;
 
-export const aiConfigured = () => Boolean(process.env.AI_API_KEY && process.env.AI_MODEL);
+export async function aiConfigured() {
+  const s = await getSettings();
+  return Boolean(s.AI_API_KEY && s.AI_MODEL);
+}
 
 /** Pull the first JSON object out of a model reply (some models wrap it in a code fence). */
 export function extractJson(text: string): unknown {
@@ -69,12 +73,13 @@ async function nextTopic(): Promise<string> {
 
 /** Generate one article in all three languages and store it. Returns the article id. */
 export async function generateArticle(topic?: string): Promise<string> {
-  if (!aiConfigured()) throw new Error("AI_API_KEY and AI_MODEL are not set");
+  const settings = await getSettings();
+  if (!settings.AI_API_KEY || !settings.AI_MODEL) throw new Error("Λείπει το API key ή το μοντέλο του OpenRouter (Ρυθμίσεις)");
   const subject = topic?.trim() || (await nextTopic());
-  const model = process.env.AI_MODEL!;
-  const res = await fetch(`${process.env.AI_BASE_URL ?? "https://openrouter.ai/api/v1"}/chat/completions`, {
+  const model = settings.AI_MODEL;
+  const res = await fetch(`${(settings.AI_BASE_URL || "https://openrouter.ai/api/v1").replace(/\/$/, "")}/chat/completions`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${process.env.AI_API_KEY}`, "Content-Type": "application/json" },
+    headers: { Authorization: `Bearer ${settings.AI_API_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model,
       temperature: 0.7,
@@ -89,7 +94,7 @@ export async function generateArticle(topic?: string): Promise<string> {
 
   // Keep slugs unique without failing the run.
   const taken = await db.article.count({ where: { slug: { startsWith: article.slug } } });
-  const publish = process.env.AI_AUTO_PUBLISH === "true";
+  const publish = settings.AI_AUTO_PUBLISH === "true";
   const created = await db.article.create({
     data: {
       slug: taken ? `${article.slug}-${taken + 1}` : article.slug,
