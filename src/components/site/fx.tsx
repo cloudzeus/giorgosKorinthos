@@ -228,8 +228,9 @@ export function AutoVideo({ src, poster, className = "", label }: { src: string;
 }
 
 /**
- * A botanical illustration behind a section. It drifts in as the section arrives, keeps moving slower
- * than the page, and fades away as the section leaves. Decorative: hidden from assistive technology.
+ * A botanical illustration behind a section, kept discreet (low opacity, at the page edge, never on the text).
+ * It slides in as the section arrives, sways as if in a light wind, leans with the scroll speed,
+ * moves slower than the page and fades away as the section leaves. Decorative: hidden from assistive technology.
  * Place it as the first child of a `position: relative` section and position it with a `.ep-deco--*` class.
  */
 export function Botanical({ name, className = "", from = "right", rotate = 10, drift = 80 }: {
@@ -239,24 +240,35 @@ export function Botanical({ name, className = "", from = "right", rotate = 10, d
   rotate?: number;
   drift?: number;
 }) {
-  const ref = useRef<HTMLImageElement>(null);
+  const ref = useRef<HTMLSpanElement>(null);
   useGsap(ref, (root) => {
     const section = root.parentElement!;
+    const leaf = root.firstElementChild!;
     const side = from === "right" ? 1 : -1;
     // Arrive: slide in from its side, uncurl and settle.
-    gsap.fromTo(root, { autoAlpha: 0, xPercent: 22 * side, rotate: rotate * side, scale: 0.86 }, {
+    gsap.fromTo(root, { autoAlpha: 0, xPercent: 45 * side, rotate: rotate * 2 * side, scale: 0.7 }, {
       autoAlpha: 1, xPercent: 0, rotate: 0, scale: 1, ease: "power2.out",
-      scrollTrigger: { trigger: section, start: "top 92%", end: "top 30%", scrub: 0.8 },
+      scrollTrigger: { trigger: section, start: "top 95%", end: "top 35%", scrub: 1 },
     });
     // Leave: lift away and vanish before the next section takes over.
     gsap.fromTo(root, { autoAlpha: 1 }, {
-      autoAlpha: 0, xPercent: -10 * side, rotate: -rotate * 0.6 * side, ease: "power1.in", immediateRender: false,
-      scrollTrigger: { trigger: section, start: "bottom 62%", end: "bottom 8%", scrub: 0.8 },
+      autoAlpha: 0, xPercent: 30 * side, rotate: -rotate * side, scale: 0.8, ease: "power1.in", immediateRender: false,
+      scrollTrigger: { trigger: section, start: "bottom 70%", end: "bottom 10%", scrub: 1 },
     });
-    // Depth: always a little slower than the page.
-    gsap.fromTo(root, { y: drift }, { y: -drift, ease: "none", scrollTrigger: { trigger: section, start: "top bottom", end: "bottom top", scrub: true } });
+    // Depth: slower than the page, and it leans with the speed of the scroll.
+    const lean = gsap.quickTo(root, "skewY", { duration: 0.9, ease: "power3.out" });
+    gsap.fromTo(root, { y: drift }, {
+      y: -drift, ease: "none",
+      scrollTrigger: { trigger: section, start: "top bottom", end: "bottom top", scrub: true, onUpdate: (self) => lean(gsap.utils.clamp(-7, 7, self.getVelocity() / -260)) },
+    });
+    // Wind: a slow sway from the stem, different for every branch.
+    gsap.fromTo(leaf, { rotate: -2.5 * side }, { rotate: 3 * side, duration: 5 + (name.length % 4), ease: "sine.inOut", repeat: -1, yoyo: true, transformOrigin: side === 1 ? "100% 100%" : "0% 100%" });
   }, [name, from, rotate, drift]);
-  return <img ref={ref} className={`ep-deco ${className}`} src={`/decor/${name}.webp`} alt="" aria-hidden="true" loading="lazy" decoding="async" />;
+  return (
+    <span ref={ref} className={`ep-deco ${className}`} aria-hidden="true">
+      <img src={`/decor/${name}.webp`} alt="" loading="lazy" decoding="async" />
+    </span>
+  );
 }
 
 /** Section divider: a gold olive sprig between two hairlines that draw outwards. */

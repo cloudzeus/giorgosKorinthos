@@ -74,7 +74,6 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
       <Ornament />
       <section className="ep-section ep-leafy">
         <Botanical name="olive-c" className="ep-deco--mr" from="right" rotate={12} drift={140} />
-        <Botanical name="branch-gold-b" className="ep-deco--ml ep-deco--faint" from="left" rotate={-16} />
         <div className="ep-container ep-stack" style={{ marginBottom: "var(--section)" }}>
           <p className="mr-eyebrow">{t.rooms.eyebrow}</p>
           <Title lines={t.rooms.lines} className="ep-display" />
@@ -127,8 +126,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
 
       {/* 8. The estate in numbers */}
       <section className="ep-section ep-section--inverse mr-on-inverse ep-leafy">
-        <Botanical name="branch-gold-a" className="ep-deco--br ep-deco--faint" from="right" rotate={12} />
-        <Botanical name="sprig-gold-b" className="ep-deco--tl ep-deco--xs ep-deco--faint" from="left" rotate={-24} drift={40} />
+        <Botanical name="branch-gold-a" className="ep-deco--tr ep-deco--sm ep-deco--faint" from="right" rotate={12} drift={40} />
         <div className="ep-container ep-stack ep-stack--lg">
           <div className="ep-stack"><p className="mr-eyebrow">{t.brand.statsEyebrow}</p><Title lines={t.brand.mottoB} /></div>
           <Stagger selector=".ep-facts > div">

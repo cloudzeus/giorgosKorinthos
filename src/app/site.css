@@ -454,22 +454,25 @@ html.is-still .ep-water { display: none; }
 main { overflow-x: clip; }
 .ep-leafy { position: relative; }
 .ep-leafy > .ep-container, .ep-leafy > .ep-stack { position: relative; z-index: 1; }
-.ep-deco { position: absolute; z-index: 0; pointer-events: none; user-select: none; height: auto; width: clamp(240px, 34vw, 560px); will-change: transform, opacity; }
-.ep-deco--sm { width: clamp(180px, 22vw, 360px); }
-.ep-deco--xs { width: clamp(96px, 10vw, 168px); }
-.ep-deco--faint { filter: opacity(0.45); }
-.ep-deco--tr { top: 4%; right: -6%; }
-.ep-deco--tl { top: 2%; left: -8%; }
-.ep-deco--br { bottom: 4%; right: -5%; }
-.ep-deco--bl { bottom: 6%; left: -6%; }
-.ep-deco--mr { top: 34%; right: -9%; }
-.ep-deco--ml { top: 58%; left: -10%; }
+.ep-deco { position: absolute; z-index: 0; display: block; pointer-events: none; user-select: none; width: clamp(180px, 22vw, 380px); filter: opacity(0.42); will-change: transform, opacity; }
+.ep-deco img { display: block; width: 100%; height: auto; }
+.ep-deco--sm { width: clamp(140px, 15vw, 260px); }
+.ep-deco--xs { width: clamp(80px, 8vw, 140px); }
+.ep-deco--faint { filter: opacity(0.26); }
+/* Always at the outer edge, half off the page, so no branch sits on a line of text. */
+.ep-deco--tr { top: 2%; right: -9%; }
+.ep-deco--tl { top: 2%; left: -9%; }
+.ep-deco--br { bottom: 3%; right: -8%; }
+.ep-deco--bl { bottom: 4%; left: -8%; }
+.ep-deco--mr { top: 46%; right: -11%; }
+.ep-deco--ml { top: 62%; left: -11%; }
 .ep-section--inverse.ep-leafy, .ep-footer.ep-leafy { overflow: hidden; }
+@media (max-width: 1100px) { .ep-deco { filter: opacity(0.3); } .ep-deco--faint { filter: opacity(0.2); } }
 @media (max-width: 767px) {
-  .ep-deco { width: 62vw; filter: opacity(0.5); }
-  .ep-deco--sm { width: 44vw; } .ep-deco--xs { width: 26vw; }
-  .ep-deco--tr, .ep-deco--br, .ep-deco--mr { right: -22%; }
-  .ep-deco--tl, .ep-deco--bl, .ep-deco--ml { left: -22%; }
+  .ep-deco { width: 46vw; }
+  .ep-deco--sm { width: 34vw; } .ep-deco--xs { width: 22vw; }
+  .ep-deco--tr, .ep-deco--br, .ep-deco--mr { right: -20%; }
+  .ep-deco--tl, .ep-deco--bl, .ep-deco--ml { left: -20%; }
 }
 
 /* Gold sprig divider */
