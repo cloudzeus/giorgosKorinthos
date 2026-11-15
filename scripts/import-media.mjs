@@ -1,13 +1,15 @@
 // Imports a folder of source films and photographs into the media library.
 //   node --env-file=.env scripts/import-media.mjs /path/to/folder
-// Films become short, silent, web-sized MP4 loops with a poster; photographs become WebP.
-// With BUNNY_* set, files go to Bunny Storage and the library stores CDN URLs.
-// Without it, files go to public/media-local (git-ignored) so the site can be previewed. Run again after
-// adding the Bunny keys: every asset is re-uploaded and its URL switched to the CDN.
+// Films become silent full-HD MP4 loops with a poster; photographs become WebP. The site's own photographs
+// (public/images) are uploaded too, so everything is served by the CDN and listed in the media library.
+// Bunny credentials come from the environment or, failing that, from the admin Settings (database).
+// Without them, files go to public/media-local (git-ignored) so the site can be previewed.
+// Every run rewrites prisma/media-manifest.json; `npm run db:seed` registers that list in another database.
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, readdirSync, statSync, copyFileSync, mkdtempSync } from "node:fs";
+import { createDecipheriv, createHash } from "node:crypto";
+import { mkdirSync, readFileSync, readdirSync, statSync, copyFileSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { PrismaClient } from "@prisma/client";
 
 const source = process.argv[2];
@@ -29,11 +31,22 @@ const PLAN = [
   { match: "small-beach-cafe", path: "images/places/loutraki-cove.webp", slot: null, title: "Όρμος κοντά στο Λουτράκι" },
 ];
 
-const { BUNNY_STORAGE_ZONE: zone, BUNNY_STORAGE_KEY: key, BUNNY_CDN_URL: cdn } = process.env;
-const host = process.env.BUNNY_STORAGE_HOST ?? "storage.bunnycdn.com";
+const db = new PrismaClient();
+// Same scheme as src/lib/settings.ts: AES-256-GCM, key = sha256(AUTH_SECRET).
+const stored = new Map((await db.setting.findMany({ where: { key: { startsWith: "BUNNY_" } } })).map((row) => {
+  try {
+    const [iv, tag, body] = row.value.split(".").map((part) => Buffer.from(part, "base64"));
+    const decipher = createDecipheriv("aes-256-gcm", createHash("sha256").update(process.env.AUTH_SECRET ?? "").digest(), iv);
+    decipher.setAuthTag(tag);
+    return [row.key, Buffer.concat([decipher.update(body), decipher.final()]).toString("utf8")];
+  } catch { return [row.key, ""]; }
+}));
+const setting = (name) => stored.get(name) || process.env[name] || "";
+const zone = setting("BUNNY_STORAGE_ZONE"), key = setting("BUNNY_STORAGE_KEY"), cdn = setting("BUNNY_CDN_URL");
+const host = /^([a-z]{2,3}\.)?storage\.bunnycdn\.com$/.test(setting("BUNNY_STORAGE_HOST")) ? setting("BUNNY_STORAGE_HOST") : "storage.bunnycdn.com";
 const remote = Boolean(zone && key && cdn);
 const work = mkdtempSync(join(tmpdir(), "ephyria-media-"));
-const db = new PrismaClient();
+const manifest = [];
 const run = (cmd, args) => execFileSync(cmd, args, { stdio: ["ignore", "ignore", "inherit"] });
 const probe = (file) => execFileSync("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0", file]).toString().trim().split(",").map(Number);
 
@@ -58,20 +71,41 @@ for (const item of PLAN) {
   let poster = null, kind = "IMAGE";
   if (item.path.endsWith(".mp4")) {
     kind = "VIDEO";
-    // 16 s, 1280 wide, no sound: a background loop, not a film player.
-    run("ffmpeg", ["-y", "-loglevel", "error", "-i", input, "-t", "16", "-an", "-vf", "scale=1280:-2", "-c:v", "libx264", "-crf", "27", "-preset", "medium", "-pix_fmt", "yuv420p", "-movflags", "+faststart", output]);
-    const still = `${output}.jpg`, webp = `${output}.webp`;
-    run("ffmpeg", ["-y", "-loglevel", "error", "-ss", "1", "-i", input, "-frames:v", "1", "-vf", "scale=1280:-2", still]);
-    run("cwebp", ["-quiet", "-q", "78", still, "-o", webp]);
+    // Full length, full HD, no sound. CRF 23 with the slow preset is visually the same as the source at a fraction of the size.
+    run("ffmpeg", ["-y", "-loglevel", "error", "-i", input, "-an", "-vf", "scale='min(1920,iw)':-2", "-c:v", "libx264", "-crf", "23", "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", output]);
+    const still = `${output}.png`, webp = `${output}.webp`;
+    run("ffmpeg", ["-y", "-loglevel", "error", "-ss", "1", "-i", input, "-frames:v", "1", "-vf", "scale='min(1920,iw)':-2", still]);
+    run("cwebp", ["-quiet", "-q", "82", still, "-o", webp]);
     poster = await publish(webp, item.path.replace(/\.mp4$/, ".webp"), "image/webp");
   } else {
-    run("cwebp", ["-quiet", "-q", "80", "-resize", "2000", "0", input, "-o", output]);
+    run("cwebp", ["-quiet", "-q", "82", "-resize", "2400", "0", input, "-o", output]);
   }
   const url = await publish(output, item.path, kind === "VIDEO" ? "video/mp4" : "image/webp");
   const [width, height] = probe(output);
   const data = { kind, url, poster, title: item.title, bytes: statSync(output).size, width, height };
   if (item.slot) await db.mediaAsset.updateMany({ where: { slot: item.slot, NOT: { path: item.path } }, data: { slot: null } });
   await db.mediaAsset.upsert({ where: { path: item.path }, update: { ...data, slot: item.slot }, create: { ...data, path: item.path, slot: item.slot } });
+  manifest.push({ path: item.path, kind, title: item.title, slot: item.slot, bytes: data.bytes, width, height, poster: poster ? item.path.replace(/\.mp4$/, ".webp") : null });
   console.log(`${remote ? "bunny" : "local"}  ${(data.bytes / 1e6).toFixed(1)} MB  ${item.path}`);
 }
+
+// The site's own photographs, already WebP. A file the plan above has replaced is left alone.
+const walk = (dir) => readdirSync(dir).flatMap((name) => (statSync(join(dir, name)).isDirectory() ? walk(join(dir, name)) : name.endsWith(".webp") ? [join(dir, name)] : []));
+const label = (path) => {
+  const name = path.split("/").pop().replace(".webp", "");
+  if (path.includes("/places/")) return `Περιοχή: ${name}`;
+  return `${name.startsWith("outdoor") ? "Βίλα, εξωτερικός χώρος" : "Βίλα, εσωτερικός χώρος"} ${name.replace(/^[a-z]+-/, "")}`;
+};
+for (const file of remote ? walk("public/images") : []) {
+  const path = `images/${relative("public/images", file).replace(/\\/g, "/")}`;
+  if (manifest.some((row) => row.path === path)) continue;
+  const url = await publish(file, path, "image/webp");
+  const [width, height] = probe(file);
+  const data = { kind: "IMAGE", url, title: label(path), bytes: statSync(file).size, width, height };
+  await db.mediaAsset.upsert({ where: { path }, update: { url, bytes: data.bytes, width, height }, create: { ...data, path } });
+  manifest.push({ path, kind: "IMAGE", title: data.title, slot: null, bytes: data.bytes, width, height, poster: null });
+  console.log(`bunny  ${(data.bytes / 1e6).toFixed(1)} MB  ${path}`);
+}
+if (remote) writeFileSync("prisma/media-manifest.json", `${JSON.stringify(manifest, null, 1)}\n`);
+console.log(remote ? `\n${manifest.length} files on ${cdn.replace(/\/$/, "")}` : "\nNo Bunny credentials: files were written to public/media-local.");
 await db.$disconnect();

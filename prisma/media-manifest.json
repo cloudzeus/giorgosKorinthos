@@ -1,0 +1,652 @@
+[
+ {
+  "path": "videos/places/corinth-canal.mp4",
+  "kind": "VIDEO",
+  "title": "Διώρυγα Κορίνθου, αεροφωτογράφιση με τη γέφυρα",
+  "slot": "place.corinth-canal.video",
+  "bytes": 7326028,
+  "width": 1920,
+  "height": null,
+  "poster": "videos/places/corinth-canal.webp"
+ },
+ {
+  "path": "videos/explore-hero.mp4",
+  "kind": "VIDEO",
+  "title": "Διώρυγα Κορίνθου, αεροφωτογράφιση Ισθμού",
+  "slot": "explore.hero.video",
+  "bytes": 13012514,
+  "width": 1920,
+  "height": 1080,
+  "poster": "videos/explore-hero.webp"
+ },
+ {
+  "path": "videos/places/ancient-corinth.mp4",
+  "kind": "VIDEO",
+  "title": "Ναός του Απόλλωνα, Αρχαία Κόρινθος",
+  "slot": "place.ancient-corinth.video",
+  "bytes": 30515768,
+  "width": 1920,
+  "height": 1080,
+  "poster": "videos/places/ancient-corinth.webp"
+ },
+ {
+  "path": "videos/places/acrocorinth.mp4",
+  "kind": "VIDEO",
+  "title": "Αρχαία Κόρινθος με τον Ακροκόρινθο",
+  "slot": "place.acrocorinth.video",
+  "bytes": 4508947,
+  "width": 1920,
+  "height": null,
+  "poster": "videos/places/acrocorinth.webp"
+ },
+ {
+  "path": "videos/places/loutraki.mp4",
+  "kind": "VIDEO",
+  "title": "Λουτράκι, αεροφωτογράφιση",
+  "slot": "place.loutraki.video",
+  "bytes": 8474645,
+  "width": 1920,
+  "height": null,
+  "poster": "videos/places/loutraki.webp"
+ },
+ {
+  "path": "videos/home-region.mp4",
+  "kind": "VIDEO",
+  "title": "Αρχαιολογικός χώρος Αρχαίας Κορίνθου",
+  "slot": "home.region.video",
+  "bytes": 19685235,
+  "width": 1920,
+  "height": 1080,
+  "poster": "videos/home-region.webp"
+ },
+ {
+  "path": "videos/ancient-corinth-ruins.mp4",
+  "kind": "VIDEO",
+  "title": "Ερείπια Αρχαίας Κορίνθου",
+  "slot": null,
+  "bytes": 8104589,
+  "width": 1920,
+  "height": null,
+  "poster": "videos/ancient-corinth-ruins.webp"
+ },
+ {
+  "path": "images/places/heraion.webp",
+  "kind": "IMAGE",
+  "title": "Ακρωτήριο Μελαγκάβι και Ηραίο από ψηλά",
+  "slot": "place.heraion.photo",
+  "bytes": 407626,
+  "width": 2400,
+  "height": 1350,
+  "poster": null
+ },
+ {
+  "path": "images/places/melagavi-lighthouse-aerial.webp",
+  "kind": "IMAGE",
+  "title": "Φάρος Μελαγκάβι από ψηλά",
+  "slot": null,
+  "bytes": 422252,
+  "width": 2400,
+  "height": 1350,
+  "poster": null
+ },
+ {
+  "path": "images/places/melagavi-lighthouse.webp",
+  "kind": "IMAGE",
+  "title": "Φάρος Μελαγκάβι",
+  "slot": null,
+  "bytes": 601718,
+  "width": 2400,
+  "height": 1600,
+  "poster": null
+ },
+ {
+  "path": "images/places/loutraki.webp",
+  "kind": "IMAGE",
+  "title": "Παραλιακή Λουτρακίου το απόγευμα",
+  "slot": "place.loutraki.photo",
+  "bytes": 336360,
+  "width": 2400,
+  "height": 1600,
+  "poster": null
+ },
+ {
+  "path": "images/places/loutraki-cove.webp",
+  "kind": "IMAGE",
+  "title": "Όρμος κοντά στο Λουτράκι",
+  "slot": null,
+  "bytes": 1104600,
+  "width": 2400,
+  "height": 1601,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-01.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 01",
+  "slot": null,
+  "bytes": 86052,
+  "width": 874,
+  "height": 1800,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-02.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 02",
+  "slot": null,
+  "bytes": 147522,
+  "width": 1799,
+  "height": 874,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-03.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 03",
+  "slot": null,
+  "bytes": 201136,
+  "width": 1800,
+  "height": 874,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-04.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 04",
+  "slot": null,
+  "bytes": 233814,
+  "width": 1801,
+  "height": 873,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-05.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 05",
+  "slot": null,
+  "bytes": 111362,
+  "width": 1800,
+  "height": 873,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-06.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 06",
+  "slot": null,
+  "bytes": 143012,
+  "width": 1800,
+  "height": 874,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-07.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 07",
+  "slot": null,
+  "bytes": 160294,
+  "width": 1801,
+  "height": 873,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-08.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 08",
+  "slot": null,
+  "bytes": 104468,
+  "width": 874,
+  "height": 1799,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-09.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 09",
+  "slot": null,
+  "bytes": 160594,
+  "width": 874,
+  "height": 1800,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-10.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 10",
+  "slot": null,
+  "bytes": 171982,
+  "width": 874,
+  "height": 1799,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-11.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 11",
+  "slot": null,
+  "bytes": 158320,
+  "width": 874,
+  "height": 1800,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-12.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 12",
+  "slot": null,
+  "bytes": 170508,
+  "width": 874,
+  "height": 1800,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-13-1.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 13-1",
+  "slot": null,
+  "bytes": 192242,
+  "width": 1086,
+  "height": 1448,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-13-1b.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 13-1b",
+  "slot": null,
+  "bytes": 187884,
+  "width": 1086,
+  "height": 1448,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-14.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 14",
+  "slot": null,
+  "bytes": 162974,
+  "width": 1800,
+  "height": 874,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-15.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 15",
+  "slot": null,
+  "bytes": 198560,
+  "width": 1086,
+  "height": 1448,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-16.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 16",
+  "slot": null,
+  "bytes": 120598,
+  "width": 1086,
+  "height": 1448,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-17.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 17",
+  "slot": null,
+  "bytes": 105520,
+  "width": 1798,
+  "height": 875,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-18.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 18",
+  "slot": null,
+  "bytes": 110552,
+  "width": 1798,
+  "height": 875,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-19.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 19",
+  "slot": null,
+  "bytes": 144182,
+  "width": 1799,
+  "height": 874,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-20.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 20",
+  "slot": null,
+  "bytes": 117562,
+  "width": 1801,
+  "height": 873,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-21.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 21",
+  "slot": null,
+  "bytes": 176570,
+  "width": 1800,
+  "height": 874,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-22.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 22",
+  "slot": null,
+  "bytes": 164536,
+  "width": 1800,
+  "height": 874,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-23.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 23",
+  "slot": null,
+  "bytes": 83400,
+  "width": 874,
+  "height": 1800,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-24.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 24",
+  "slot": null,
+  "bytes": 154470,
+  "width": 1800,
+  "height": 874,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-25.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 25",
+  "slot": null,
+  "bytes": 165326,
+  "width": 875,
+  "height": 1798,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-26.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 26",
+  "slot": null,
+  "bytes": 130634,
+  "width": 1800,
+  "height": 874,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-27.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 27",
+  "slot": null,
+  "bytes": 164608,
+  "width": 1800,
+  "height": 874,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-28.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 28",
+  "slot": null,
+  "bytes": 133550,
+  "width": 873,
+  "height": 1800,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-29-1.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 29-1",
+  "slot": null,
+  "bytes": 124966,
+  "width": 875,
+  "height": 1798,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-29-2.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 29-2",
+  "slot": null,
+  "bytes": 174950,
+  "width": 874,
+  "height": 1800,
+  "poster": null
+ },
+ {
+  "path": "images/indoor-30.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εσωτερικός χώρος 30",
+  "slot": null,
+  "bytes": 193832,
+  "width": 1798,
+  "height": 875,
+  "poster": null
+ },
+ {
+  "path": "images/outdoor-01.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εξωτερικός χώρος 01",
+  "slot": null,
+  "bytes": 286738,
+  "width": 1798,
+  "height": 875,
+  "poster": null
+ },
+ {
+  "path": "images/outdoor-02.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εξωτερικός χώρος 02",
+  "slot": null,
+  "bytes": 169024,
+  "width": 1798,
+  "height": 875,
+  "poster": null
+ },
+ {
+  "path": "images/outdoor-03.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εξωτερικός χώρος 03",
+  "slot": null,
+  "bytes": 136636,
+  "width": 1799,
+  "height": 874,
+  "poster": null
+ },
+ {
+  "path": "images/outdoor-04.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εξωτερικός χώρος 04",
+  "slot": null,
+  "bytes": 423826,
+  "width": 1798,
+  "height": 875,
+  "poster": null
+ },
+ {
+  "path": "images/outdoor-05.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εξωτερικός χώρος 05",
+  "slot": null,
+  "bytes": 348740,
+  "width": 874,
+  "height": 1799,
+  "poster": null
+ },
+ {
+  "path": "images/outdoor-06.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εξωτερικός χώρος 06",
+  "slot": null,
+  "bytes": 229222,
+  "width": 1799,
+  "height": 874,
+  "poster": null
+ },
+ {
+  "path": "images/outdoor-07.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εξωτερικός χώρος 07",
+  "slot": null,
+  "bytes": 179066,
+  "width": 1799,
+  "height": 874,
+  "poster": null
+ },
+ {
+  "path": "images/outdoor-08.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εξωτερικός χώρος 08",
+  "slot": null,
+  "bytes": 207588,
+  "width": 1672,
+  "height": 941,
+  "poster": null
+ },
+ {
+  "path": "images/outdoor-09.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εξωτερικός χώρος 09",
+  "slot": null,
+  "bytes": 316988,
+  "width": 1672,
+  "height": 941,
+  "poster": null
+ },
+ {
+  "path": "images/outdoor-10.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εξωτερικός χώρος 10",
+  "slot": null,
+  "bytes": 190672,
+  "width": 1672,
+  "height": 941,
+  "poster": null
+ },
+ {
+  "path": "images/outdoor-11.webp",
+  "kind": "IMAGE",
+  "title": "Βίλα, εξωτερικός χώρος 11",
+  "slot": null,
+  "bytes": 178108,
+  "width": 1672,
+  "height": 941,
+  "poster": null
+ },
+ {
+  "path": "images/places/acrocorinth.webp",
+  "kind": "IMAGE",
+  "title": "Περιοχή: acrocorinth",
+  "slot": null,
+  "bytes": 174548,
+  "width": 1400,
+  "height": 916,
+  "poster": null
+ },
+ {
+  "path": "images/places/ancient-corinth.webp",
+  "kind": "IMAGE",
+  "title": "Περιοχή: ancient-corinth",
+  "slot": null,
+  "bytes": 190978,
+  "width": 1400,
+  "height": 975,
+  "poster": null
+ },
+ {
+  "path": "images/places/corinth-canal.webp",
+  "kind": "IMAGE",
+  "title": "Περιοχή: corinth-canal",
+  "slot": null,
+  "bytes": 184676,
+  "width": 1400,
+  "height": 788,
+  "poster": null
+ },
+ {
+  "path": "images/places/isthmia.webp",
+  "kind": "IMAGE",
+  "title": "Περιοχή: isthmia",
+  "slot": null,
+  "bytes": 301616,
+  "width": 1400,
+  "height": 932,
+  "poster": null
+ },
+ {
+  "path": "images/places/kenchreai.webp",
+  "kind": "IMAGE",
+  "title": "Περιοχή: kenchreai",
+  "slot": null,
+  "bytes": 251228,
+  "width": 1400,
+  "height": 928,
+  "poster": null
+ },
+ {
+  "path": "images/places/lake-vouliagmeni.webp",
+  "kind": "IMAGE",
+  "title": "Περιοχή: lake-vouliagmeni",
+  "slot": null,
+  "bytes": 208340,
+  "width": 1400,
+  "height": 934,
+  "poster": null
+ },
+ {
+  "path": "images/places/lechaion.webp",
+  "kind": "IMAGE",
+  "title": "Περιοχή: lechaion",
+  "slot": null,
+  "bytes": 131174,
+  "width": 1400,
+  "height": 932,
+  "poster": null
+ },
+ {
+  "path": "images/places/mycenae.webp",
+  "kind": "IMAGE",
+  "title": "Περιοχή: mycenae",
+  "slot": null,
+  "bytes": 323970,
+  "width": 1400,
+  "height": 932,
+  "poster": null
+ },
+ {
+  "path": "images/places/nemea.webp",
+  "kind": "IMAGE",
+  "title": "Περιοχή: nemea",
+  "slot": null,
+  "bytes": 273302,
+  "width": 1400,
+  "height": 932,
+  "poster": null
+ },
+ {
+  "path": "images/places/stymphalia.webp",
+  "kind": "IMAGE",
+  "title": "Περιοχή: stymphalia",
+  "slot": null,
+  "bytes": 175220,
+  "width": 1400,
+  "height": 779,
+  "poster": null
+ }
+]

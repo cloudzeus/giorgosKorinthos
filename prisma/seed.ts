@@ -1,4 +1,6 @@
 // npm run db:seed  — creates the rooms and the first administrator. Safe to run again.
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -30,6 +32,20 @@ async function main() {
     console.log("ADMIN_EMAIL / ADMIN_PASSWORD not set: no admin user created.");
   }
   console.log(`Villas ready: ${units.length}`);
+
+  // Material already uploaded to the CDN by scripts/import-media.mjs: list it in the media library.
+  const cdn = (process.env.NEXT_PUBLIC_CDN_URL || process.env.BUNNY_CDN_URL || "").replace(/\/$/, "");
+  const file = join(__dirname, "media-manifest.json");
+  if (cdn && existsSync(file)) {
+    const rows = JSON.parse(readFileSync(file, "utf8")) as { path: string; kind: "IMAGE" | "VIDEO"; title: string; slot: string | null; bytes: number; width: number; height: number; poster: string | null }[];
+    for (const row of rows) {
+      const data = { url: `${cdn}/${row.path}`, poster: row.poster ? `${cdn}/${row.poster}` : null, bytes: row.bytes, width: row.width, height: row.height };
+      // An existing entry keeps the title and the place on the site that the admin gave it.
+      const taken = row.slot ? await db.mediaAsset.findUnique({ where: { slot: row.slot } }) : null;
+      await db.mediaAsset.upsert({ where: { path: row.path }, update: data, create: { ...data, path: row.path, kind: row.kind, title: row.title, slot: taken ? null : row.slot } });
+    }
+    console.log(`Media library ready: ${rows.length} files from ${cdn}`);
+  }
 }
 
 main().finally(() => db.$disconnect());

@@ -64,6 +64,8 @@ node --env-file=.env scripts/import-media.mjs /path/to/folder
 
 Χωρίς κλειδιά Bunny τα αρχεία μπαίνουν στο `public/media-local` (εκτός git) για τοπική προεπισκόπηση. Ξανατρέξε την ίδια εντολή μετά τη ρύθμιση του Bunny για να ανέβουν στο CDN.
 
+Το script ανεβάζει και τις φωτογραφίες του `public/images`, και γράφει τη λίστα όλων στο `prisma/media-manifest.json`. Σε άλλη βάση (π.χ. παραγωγή) δεν χρειάζεται νέο ανέβασμα: όρισε `NEXT_PUBLIC_CDN_URL` με τη διεύθυνση του Pull Zone και τρέξε `npm run db:seed`, που καταχωρίζει το υλικό στη Βιβλιοθήκη μέσων. Με την ίδια μεταβλητή οι φωτογραφίες του site σερβίρονται από το CDN.
+
 Οι φωτογραφίες αξιοθέατων στο `public/images/places` είναι από το Wikimedia Commons και εμφανίζονται με δημιουργό και άδεια (`src/lib/site.ts`, `placePhotos`).
 
 ## Διαχειριστικό

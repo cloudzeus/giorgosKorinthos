@@ -6,7 +6,9 @@ export const contact = { phone: "+30 694 656 4148", phoneHref: "tel:+30694656414
 export const villa = { lat: 37.896, lng: 22.928 };
 
 type AltKey = keyof Dict["alt"];
-export const img = (name: string) => `/images/${name}.webp`;
+/** With NEXT_PUBLIC_CDN_URL set, photographs come from the CDN; without it, from public/images. */
+const CDN = (process.env.NEXT_PUBLIC_CDN_URL ?? "").replace(/\/$/, "");
+export const img = (name: string) => `${CDN}/images/${name}.webp`;
 
 /** Every photograph, with its alt key, intrinsic size and gallery category. */
 export const photos: { name: string; alt: AltKey; w: number; h: number; cat: keyof Dict["gallery"]["cats"] }[] = [
@@ -104,4 +106,4 @@ export const placePhotos: Record<PlaceSlug, { author: string; license: string; l
   "stymphalia": { author: "Nojos88", license: "CC BY-SA 4.0", licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/", source: "https://commons.wikimedia.org/wiki/File:%CE%9B%CE%AF%CE%BC%CE%BD%CE%B7_%CE%A3%CF%84%CF%85%CE%BC%CF%86%CE%B1%CE%BB%CE%AF%CE%B1%CF%82_6.jpg" },
   "lechaion": { author: "Schuppi", license: "CC BY-SA 4.0", licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/", source: "https://commons.wikimedia.org/wiki/File:Korakou_(Corinth)_7.JPG" },
 };
-export const placeImg = (slug: PlaceSlug) => `/images/places/${slug}.webp`;
+export const placeImg = (slug: PlaceSlug) => `${CDN}/images/places/${slug}.webp`;
