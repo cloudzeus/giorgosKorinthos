@@ -3,8 +3,8 @@ import { Check } from "lucide-react";
 import { alternates, getDict } from "@/lib/i18n";
 import { img } from "@/lib/site";
 import { ParallaxImage } from "@/components/ds/ParallaxImage";
-import { Stagger } from "@/components/site/motion-kit";
-import { PageIntro } from "@/components/site/parts";
+import { Stagger } from "@/components/site/fx";
+import { PageIntro, PoolImage } from "@/components/site/parts";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/experiences">): Promise<Metadata> {
   const { locale, t } = getDict((await params).locale);
@@ -16,7 +16,7 @@ export default async function ExperiencesPage({ params }: PageProps<"/[locale]/e
   return (
     <>
       <PageIntro eyebrow={t.experiences.eyebrow} lines={t.experiences.lines} lead={t.experiences.lead} />
-      <div className="ep-container"><ParallaxImage src={img("outdoor-01")} alt={t.alt.poolDay} ratio="21 / 9" amount={10} /></div>
+      <div className="ep-container"><PoolImage name="outdoor-01" alt={t.alt.poolDay} className="ep-pool--band" /></div>
       <section className="ep-section">
         <div className="ep-container">
           <Stagger className="ep-cols">

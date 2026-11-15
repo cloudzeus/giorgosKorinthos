@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { db } from "@/lib/db";
 import { alternates, getDict, longDate } from "@/lib/i18n";
-import { AnimatedHeading } from "@/components/ds/AnimatedHeading";
+import { Title } from "@/components/site/fx";
 import { Prose } from "@/components/site/parts";
 
 type Props = PageProps<"/[locale]/explore-corinth/[slug]">;
@@ -30,7 +30,7 @@ export default async function ArticlePage({ params }: Props) {
     <article className="ep-container ep-stack ep-stack--lg" style={{ paddingTop: "calc(72px + var(--section) / 1.6)", paddingBottom: "var(--section)" }}>
       <header className="ep-stack" style={{ maxWidth: 1040 }}>
         <p className="mr-eyebrow"><Link href={`/${locale}/explore-corinth#journal`} style={{ color: "inherit" }}>{t.explore.journal}</Link>{article.publishedAt ? ` / ${longDate(article.publishedAt, locale)}` : ""}</p>
-        <AnimatedHeading as="h1" className="mr-h2" lines={[text.title]} />
+        <Title as="h1" className="mr-h2" lines={[text.title]} />
         <p className="mr-lead mr-muted">{text.excerpt}</p>
       </header>
       <hr className="mr-rule" />

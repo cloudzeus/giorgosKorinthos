@@ -27,3 +27,8 @@ export function LogoHorizontal({ className, mono, title = "Ephyria Lux" }: Props
     </svg>
   );
 }
+
+/** The wordmark alone, for the oversized footer signature. */
+export function LogoWordmark({ className, title = "Ephyria Lux" }: Props) {
+  return <svg className={className} viewBox="78 872 1094 104" role="img" aria-label={title}>{layer("word", true)}</svg>;
+}

@@ -8,7 +8,7 @@ import { Alert, PageHead, eur, unitLabel } from "@/components/admin/parts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { updateUnit } from "../../actions";
 
-export const metadata = { title: "Δωμάτια και τιμές" };
+export const metadata = { title: "Βίλες και τιμές" };
 
 export default async function RoomsPage({ searchParams }: PageProps<"/admin/rooms">) {
   const user = await requirePermission("reservations.read");
@@ -17,17 +17,17 @@ export default async function RoomsPage({ searchParams }: PageProps<"/admin/room
   const write = can(user.role, "rooms.write");
   return (
     <>
-      <PageHead title="Δωμάτια και τιμές" text="Η τιμή ανά βραδιά που βλέπει ο επισκέπτης και χρεώνεται στην κράτηση. Οι αλλαγές ισχύουν αμέσως για νέες κρατήσεις." />
-      {query.ok ? <Alert>Το δωμάτιο ενημερώθηκε.</Alert> : null}
+      <PageHead title="Βίλες και τιμές" text="Η τιμή ανά βραδιά που βλέπει ο επισκέπτης και χρεώνεται στην κράτηση. Οι αλλαγές ισχύουν αμέσως για νέες κρατήσεις." />
+      {query.ok ? <Alert>Η βίλα ενημερώθηκε.</Alert> : null}
       {query.error ? <Alert bad>Η τιμή πρέπει να είναι θετικός αριθμός και η χωρητικότητα από 1 έως 20.</Alert> : null}
       <section className="ad-card">
         <Table className="ad-table">
-          <TableHeader><TableRow><TableHead>Δωμάτιο</TableHead><TableHead className="ad-hide">Κτίριο</TableHead><TableHead>Άτομα</TableHead><TableHead>Τιμή ανά βραδιά</TableHead><TableHead>Στο site</TableHead><TableHead><span className="sr-only">Ενέργειες</span></TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>Βίλα</TableHead><TableHead>Άτομα</TableHead><TableHead>Τιμή ανά βραδιά</TableHead><TableHead>Στο site</TableHead><TableHead><span className="sr-only">Ενέργειες</span></TableHead></TableRow></TableHeader>
           <TableBody>
             {units.map((unit) => (
               <TableRow key={unit.id}>
                 <TableCell><strong>{unitLabel(unit.slug)}</strong></TableCell>
-                <TableCell className="ad-hide">Κτίριο {unit.building === "A" ? "Α" : "Β"}</TableCell>
+                
                 <TableCell>{unit.capacity}</TableCell>
                 <TableCell>{eur(unit.priceCents)}</TableCell>
                 <TableCell><Badge variant={unit.active ? "success" : "neutral"}>{unit.active ? "Διαθέσιμο για κράτηση" : "Κρυφό"}</Badge></TableCell>

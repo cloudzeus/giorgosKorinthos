@@ -4,16 +4,15 @@ import bcrypt from "bcryptjs";
 
 const db = new PrismaClient();
 
-// The five rooms from the owner's text. Prices are PLACEHOLDERS: set the real ones in Admin > Δωμάτια και τιμές.
+// The two villas of the estate. Each is rented whole. Prices are PLACEHOLDERS: set the real ones in Admin > Βίλες και τιμές.
 const units = [
-  { slug: "a1", building: "A", sort: 1, capacity: 3, priceCents: 15000 },
-  { slug: "a2", building: "A", sort: 2, capacity: 2, priceCents: 12000 },
-  { slug: "a3", building: "A", sort: 3, capacity: 2, priceCents: 12000 },
-  { slug: "b1", building: "B", sort: 4, capacity: 3, priceCents: 15000 },
-  { slug: "b2", building: "B", sort: 5, capacity: 1, priceCents: 9000 },
+  { slug: "a", building: "A", sort: 1, capacity: 7, priceCents: 45000 },
+  { slug: "b", building: "B", sort: 2, capacity: 4, priceCents: 30000 },
 ];
 
 async function main() {
+  // Rows from the earlier per-room model are hidden, not deleted: old reservations may point at them.
+  await db.unit.updateMany({ where: { slug: { notIn: units.map((unit) => unit.slug) } }, data: { active: false } });
   for (const unit of units) await db.unit.upsert({ where: { slug: unit.slug }, update: {}, create: unit });
   const { ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_NAME } = process.env;
   if (ADMIN_EMAIL && ADMIN_PASSWORD) {
@@ -28,7 +27,7 @@ async function main() {
   } else {
     console.log("ADMIN_EMAIL / ADMIN_PASSWORD not set: no admin user created.");
   }
-  console.log(`Rooms ready: ${units.length}`);
+  console.log(`Villas ready: ${units.length}`);
 }
 
 main().finally(() => db.$disconnect());

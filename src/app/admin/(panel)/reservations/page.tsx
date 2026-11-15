@@ -53,7 +53,7 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
                 <div className="ad-field"><label htmlFor="m-out">Αναχώρηση</label><input id="m-out" name="out" type="date" required /></div>
               </div>
               <fieldset className="ad-checks">
-                <legend>Δωμάτια</legend>
+                <legend>Βίλα</legend>
                 {units.map((unit) => <label key={unit.id}><input type="checkbox" name="unit" value={unit.id} />{unitLabel(unit.slug)}</label>)}
               </fieldset>
               <div className="ad-form__row">
@@ -72,8 +72,8 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
       </PageHead>
 
       {query.ok ? <Alert>Η καταχώριση αποθηκεύτηκε και οι ημερομηνίες δεσμεύτηκαν.</Alert> : null}
-      {query.error === "taken" ? <Alert bad>Κάποιο από τα δωμάτια είναι ήδη κλεισμένο για αυτές τις ημερομηνίες. Δεν αποθηκεύτηκε τίποτα.</Alert> : null}
-      {query.error === "form" ? <Alert bad>Συμπληρώστε άφιξη, αναχώρηση μετά την άφιξη και τουλάχιστον ένα δωμάτιο.</Alert> : null}
+      {query.error === "taken" ? <Alert bad>Κάποια βίλα είναι ήδη κλεισμένη για αυτές τις ημερομηνίες. Δεν αποθηκεύτηκε τίποτα.</Alert> : null}
+      {query.error === "form" ? <Alert bad>Συμπληρώστε άφιξη, αναχώρηση μετά την άφιξη και τουλάχιστον μία βίλα.</Alert> : null}
 
       <nav className="ad-filters" aria-label="Φίλτρο κατάστασης" style={{ marginBottom: 16 }}>
         {FILTERS.map((item) => <Link key={item.id} href={`/admin/reservations?status=${item.id}`} aria-current={item.id === filter ? "true" : undefined}>{item.label}</Link>)}
@@ -86,7 +86,7 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
               <TableRow>
                 <TableHead><SortHead field="checkIn" label="Διαμονή" sort={sort} dir={dir} base={base} /></TableHead>
                 <TableHead><SortHead field="guest" label="Επισκέπτης" sort={sort} dir={dir} base={base} /></TableHead>
-                <TableHead className="ad-hide">Δωμάτια</TableHead>
+                <TableHead className="ad-hide">Βίλα</TableHead>
                 <TableHead><SortHead field="total" label="Σύνολο" sort={sort} dir={dir} base={base} /></TableHead>
                 <TableHead>Κατάσταση</TableHead>
                 <TableHead className="ad-hide"><SortHead field="created" label="Καταχωρίστηκε" sort={sort} dir={dir} base={base} /></TableHead>
@@ -100,7 +100,7 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
                   <TableRow key={row.id}>
                     <TableCell><strong>{day(row.checkIn)}</strong><br /><span className="ad-stat__note">έως {day(row.checkOut)} · {nightsBetween(row.checkIn, row.checkOut)} βρ.</span></TableCell>
                     <TableCell>{row.guestName}<br /><span className="ad-stat__note">{[row.guestEmail, row.guestPhone].filter(Boolean).join(" · ") || row.code}</span></TableCell>
-                    <TableCell className="ad-hide">{row.units.map((item) => item.unit.slug.toUpperCase()).join(", ")}</TableCell>
+                    <TableCell className="ad-hide">{row.units.map((item) => unitLabel(item.unit.slug)).join(", ")}</TableCell>
                     <TableCell>{row.status === "BLOCKED" ? "-" : <>{eur(row.totalCents)}{row.dueCents < row.totalCents && row.status === "CONFIRMED" ? <><br /><span className="ad-stat__note">υπόλοιπο {eur(row.totalCents - row.dueCents)}</span></> : null}</>}</TableCell>
                     <TableCell><Status value={expired ? "EXPIRED" : row.status} /></TableCell>
                     <TableCell className="ad-hide">{stamp(row.createdAt)}<br /><span className="ad-stat__note">{row.source === "WEB" ? "Από το site" : "Χειροκίνητα"} · {row.code}</span></TableCell>

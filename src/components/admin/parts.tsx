@@ -53,5 +53,5 @@ export function Status({ value }: { value: keyof typeof STATUS }) {
 }
 
 import el from "@/i18n/el";
-/** Greek room label for the admin, e.g. "Α1 · Τρίκλινο δωμάτιο". */
-export const unitLabel = (slug: string) => `${slug.toUpperCase().replace("A", "Α").replace("B", "Β")} · ${el.units[slug as keyof typeof el.units]?.name ?? slug}`;
+/** Greek villa label for the admin. */
+export const unitLabel = (slug: string) => el.units[slug as keyof typeof el.units]?.name ?? `Παλιά εγγραφή (${slug})`;

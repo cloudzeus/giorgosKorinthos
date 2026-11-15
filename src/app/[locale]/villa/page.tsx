@@ -4,11 +4,8 @@ import { alternates, getDict } from "@/lib/i18n";
 import { img } from "@/lib/site";
 import { DestinationStory } from "@/components/ds/DestinationStory";
 import { HorizontalImageGallery } from "@/components/ds/HorizontalImageGallery";
-import { ParallaxSection } from "@/components/ds/ParallaxSection";
-import { AnimatedHeading } from "@/components/ds/AnimatedHeading";
-import { SplitTextReveal } from "@/components/ds/SplitTextReveal";
-import { Stagger } from "@/components/site/motion-kit";
-import { PageHero } from "@/components/site/parts";
+import { CountUp, Marquee, ParallaxCover, ScrubText, Stagger, Title } from "@/components/site/fx";
+import { PageHero, PoolImage } from "@/components/site/parts";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/villa">): Promise<Metadata> {
   const { locale, t } = getDict((await params).locale);
@@ -40,18 +37,20 @@ export default async function VillaPage({ params }: PageProps<"/[locale]/villa">
           <Link className="mr-btn mr-btn--secondary" style={{ justifySelf: "start" }} href={`/${locale}/gallery`}>{t.nav.gallery}</Link>
         </div>
       </section>
-      <ParallaxSection src={img("outdoor-10")} alt={t.alt.poolView} minHeight="90dvh">
-        <div className="ep-stack" style={{ maxWidth: 720 }}>
+      <Marquee words={t.mottos} />
+      <ParallaxCover media={<PoolImage name="outdoor-10" alt={t.alt.poolView} />}>
+        <div className="ep-container ep-cta__body">
           <p className="mr-eyebrow">{t.experiences.eyebrow}</p>
-          <AnimatedHeading lines={[t.villa.playTitle]} />
-          <SplitTextReveal text={t.villa.playText} />
-          <div><Link className="mr-btn mr-btn--inverse" href={`/${locale}/experiences`}>{t.nav.experiences}</Link></div>
+          <Title lines={[t.villa.playTitle]} className="ep-display" />
+          <p className="mr-lead">{t.villa.playText}</p>
+          <Link className="mr-btn mr-btn--inverse" href={`/${locale}/experiences`}>{t.nav.experiences}</Link>
         </div>
-      </ParallaxSection>
+      </ParallaxCover>
       <section className="ep-section">
-        <div className="ep-container">
+        <div className="ep-container ep-stack ep-stack--lg">
+          <div className="ep-motto"><ScrubText text={t.brand.mottoC} /></div>
           <Stagger selector=".ep-facts > div">
-            <dl className="ep-facts">{t.facts.map((fact) => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl>
+            <dl className="ep-facts">{t.facts.map((fact) => <div key={fact.label}><dt>{fact.label}</dt><dd><CountUp value={Number(fact.value)} /></dd></div>)}</dl>
           </Stagger>
         </div>
       </section>

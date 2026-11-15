@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import assert from 'node:assert';
 
-const OVERRIDE = { 112: 44, 72: 38, 36: 26, 32: 24, 20: 18, 18: 16 };
+const OVERRIDE = { 144: 64, 96: 44, 88: 48, 56: 32, 40: 26, 112: 44, 72: 38, 36: 26, 32: 24, 20: 18, 18: 16 };
 const phone = (d) => OVERRIDE[d] ?? (d <= 15 ? d + 1 : d <= 20 ? d : Math.round(d * 0.78));
 const r = (n) => +n.toFixed(4);
 export function token(d) {

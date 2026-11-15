@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Cormorant_Garamond, Inter, Manrope } from "next/font/google";
+import { Manrope, Noto_Serif_Display } from "next/font/google";
 import "../globals.css";
 import { alternates, getDict } from "@/lib/i18n";
-import { contact } from "@/lib/site";
-import { LogoFull, LogoHorizontal } from "@/components/site/Logo";
+import { contact, img } from "@/lib/site";
+import { LogoFull, LogoHorizontal, LogoMark, LogoWordmark } from "@/components/site/Logo";
 import { HeaderShell, MotionToggle, Providers, RouteTransition } from "@/components/site/motion-kit";
+import { Cursor } from "@/components/site/fx";
 
+// Display: a high-contrast serif with Greek. Text and UI: Manrope.
+const noto = Noto_Serif_Display({ subsets: ["latin", "greek"], weight: ["300", "400"], style: ["normal", "italic"], variable: "--font-noto", display: "swap" });
 const manrope = Manrope({ subsets: ["latin", "greek"], weight: ["300", "400", "500", "600"], variable: "--font-manrope", display: "swap" });
-const inter = Inter({ subsets: ["latin", "greek"], weight: ["400", "500", "600"], variable: "--font-inter", display: "swap" });
-const cormorant = Cormorant_Garamond({ subsets: ["latin"], weight: ["400"], style: ["normal", "italic"], variable: "--font-cormorant", display: "swap" });
 
 // No generateStaticParams on purpose: pages render on first request and are cached, so the build needs no database.
 // Admin actions and the content cron call revalidatePath to refresh them.
@@ -25,6 +26,9 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
   };
 }
 
+// Shows the intro curtain once per browser session.
+const SEEN = `try{if(sessionStorage.getItem("ep-seen"))document.documentElement.classList.add("is-returning");sessionStorage.setItem("ep-seen","1")}catch(e){}`;
+
 export default async function LocaleLayout({ children, params }: LayoutProps<"/[locale]">) {
   const { locale, t } = getDict((await params).locale);
   const base = `/${locale}`;
@@ -37,8 +41,10 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
     { href: `${base}/contact`, label: t.nav.contact },
   ];
   return (
-    <html lang={locale} className={`${manrope.variable} ${inter.variable} ${cormorant.variable}`}>
+    <html lang={locale} className={`${noto.variable} ${manrope.variable}`} suppressHydrationWarning>
       <body>
+        <script dangerouslySetInnerHTML={{ __html: SEEN }} />
+        <div className="ep-loader" aria-hidden="true"><LogoMark mono /></div>
         <a className="mr-btn ep-skip" href="#main">{t.nav.skip}</a>
         <Providers>
           <HeaderShell
@@ -46,8 +52,10 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
             items={items}
             book={{ href: `${base}/booking`, label: t.nav.book }}
             locale={locale}
-            labels={{ menu: t.nav.menu, language: t.nav.language, home: t.nav.home }}
+            labels={{ menu: t.nav.menu, close: t.gallery.close, language: t.nav.language, home: t.nav.home }}
             overHero={["/", "/villa", "/explore-corinth"]}
+            media={<img src={img("outdoor-10")} alt="" loading="lazy" />}
+            contact={<><a href={contact.phoneHref}>{contact.phone}</a><a href={`mailto:${contact.email}`}>{contact.email}</a><span>{t.contact.address}</span></>}
           />
           <main id="main"><RouteTransition>{children}</RouteTransition></main>
           <footer className="ep-footer">
@@ -55,7 +63,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
               <div className="ep-footer__top">
                 <div className="ep-stack">
                   <LogoFull mono className="ep-footer__logo" />
-                  <p className="mr-body" style={{ color: "var(--text-inverse-muted)", maxWidth: "32ch" }}>{t.footer.tagline}</p>
+                  <p className="mr-editorial" style={{ color: "var(--text-inverse-muted)", maxWidth: "24ch" }}>{t.footer.tagline}</p>
                 </div>
                 <nav aria-label={t.footer.explore}>
                   <h2>{t.footer.explore}</h2>
@@ -81,8 +89,10 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                 <span>© {new Date().getFullYear()} Ephyria Lux. {t.footer.rights}</span>
                 <MotionToggle offLabel={t.footer.motionOff} onLabel={t.footer.motionOn} />
               </div>
+              <LogoWordmark className="ep-footer__sig" title="" />
             </div>
           </footer>
+          <Cursor />
         </Providers>
       </body>
     </html>

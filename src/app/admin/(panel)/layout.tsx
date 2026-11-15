@@ -16,7 +16,7 @@ export default async function PanelLayout({ children }: LayoutProps<"/admin">) {
         <nav className="ad-nav" aria-label="Διαχείριση">
           <NavLink href="/admin" exact><LayoutDashboard aria-hidden="true" strokeWidth={1.5} /><span>Επισκόπηση</span></NavLink>
           {can(user.role, "reservations.read") ? <NavLink href="/admin/reservations"><CalendarCheck aria-hidden="true" strokeWidth={1.5} /><span>Κρατήσεις</span></NavLink> : null}
-          {can(user.role, "reservations.read") ? <NavLink href="/admin/rooms"><BedDouble aria-hidden="true" strokeWidth={1.5} /><span>Δωμάτια και τιμές</span></NavLink> : null}
+          {can(user.role, "reservations.read") ? <NavLink href="/admin/rooms"><BedDouble aria-hidden="true" strokeWidth={1.5} /><span>Βίλες και τιμές</span></NavLink> : null}
           {can(user.role, "content.read") ? <NavLink href="/admin/content"><FileText aria-hidden="true" strokeWidth={1.5} /><span>Περιεχόμενο</span></NavLink> : null}
           {can(user.role, "messages.read") ? <NavLink href="/admin/messages"><Mail aria-hidden="true" strokeWidth={1.5} /><span>Μηνύματα</span></NavLink> : null}
         </nav>

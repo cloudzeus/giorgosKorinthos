@@ -2,35 +2,35 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { getDict, longDate } from "@/lib/i18n";
 import { contact, img, places } from "@/lib/site";
-import { AnimatedHeading } from "@/components/ds/AnimatedHeading";
-import { SplitTextReveal } from "@/components/ds/SplitTextReveal";
-import { ImageMaskReveal } from "@/components/ds/ImageMaskReveal";
-import { ParallaxImage } from "@/components/ds/ParallaxImage";
-import { ParallaxSection } from "@/components/ds/ParallaxSection";
-import { PinnedStorySection } from "@/components/ds/PinnedStorySection";
-import { FadeInSection } from "@/components/ds/FadeInSection";
 import { MagneticButton } from "@/components/ds/MagneticButton";
-import { Drift, HeroMotion, Stagger, StickyBook } from "@/components/site/motion-kit";
-import { BookingBar, RoomCard } from "@/components/site/parts";
+import { HeroMotion } from "@/components/site/motion-kit";
+import { ArchReveal, CountUp, Frame, HorizontalScroll, Marquee, ParallaxCover, Scenes, ScrubText, Stagger, Title } from "@/components/site/fx";
+import { BookingBar, HeroTitle, PoolImage, VillaBlock } from "@/components/site/parts";
 
 export default async function Home({ params }: PageProps<"/[locale]">) {
   const { locale, t } = getDict((await params).locale);
   const base = `/${locale}`;
   const [units, posts] = await Promise.all([
-    db.unit.findMany({ where: { active: true }, orderBy: { sort: "asc" }, take: 4 }),
+    db.unit.findMany({ where: { active: true }, orderBy: { sort: "asc" } }),
     db.article.findMany({ where: { status: "PUBLISHED" }, orderBy: { publishedAt: "desc" }, take: 3, include: { translations: { where: { locale } } } }),
   ]);
-  const stepPhotos = [{ name: "outdoor-03", alt: t.alt.bbq }, { name: "outdoor-04", alt: t.alt.garden }, { name: "indoor-30", alt: t.alt.spa }];
+  const scenes = [{ name: "outdoor-03", alt: t.alt.bbq }, { name: "outdoor-04", alt: t.alt.garden }, { name: "indoor-30", alt: t.alt.spa }];
+  const journey = [
+    { name: "indoor-02", alt: t.alt.living }, { name: "indoor-14", alt: t.alt.view }, { name: "indoor-15", alt: t.alt.lounge }, { name: "indoor-06", alt: t.alt.kitchen },
+    { name: "indoor-19", alt: t.alt.bedroom }, { name: "indoor-13-1", alt: t.alt.bath }, { name: "indoor-30", alt: t.alt.spa }, { name: "outdoor-07", alt: t.alt.facadeDusk },
+  ];
 
   return (
     <>
-      {/* 1. Immersive hero */}
+      {/* 1. Hero */}
       <HeroMotion id="hero">
-        <img className="ep-hero__media" src={img("outdoor-08")} alt={t.alt.poolDusk} fetchPriority="high" />
+        <PoolImage name="outdoor-08" alt={t.alt.poolDusk} className="ep-hero__media" priority />
         <div className="ep-container ep-hero__body">
           <p className="mr-eyebrow" data-hero-fade>{t.hero.eyebrow}</p>
-          <h1 className="mr-h1">{t.hero.lines.map((line) => <span className="mr-m-line" key={line}><span>{line}</span></span>)}</h1>
-          <p className="mr-lead" data-hero-fade>{t.hero.lead}</p>
+          <div className="ep-hero__row">
+            <HeroTitle lines={t.hero.lines} />
+            <p className="mr-lead" data-hero-fade>{t.hero.lead}</p>
+          </div>
         </div>
         <div className="ep-container ep-hero__foot" data-hero-fade>
           <BookingBar locale={locale} t={t} />
@@ -38,135 +38,146 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
         </div>
       </HeroMotion>
 
-      {/* 2. Philosophy: two photographs drifting at different speeds */}
+      {/* 2. Statement that lights up with the scroll, and two photographs at different speeds */}
       <section id="philosophy" className="ep-section">
-        <div className="ep-container ep-grid ep-duo">
-          <div className="ep-duo__text ep-stack">
-            <p className="mr-eyebrow">{t.philosophy.eyebrow}</p>
-            <AnimatedHeading lines={t.philosophy.lines} />
-            <SplitTextReveal text={t.philosophy.text} className="mr-lead mr-muted" stagger={0.02} />
-            <p className="mr-editorial">{t.philosophy.quote}</p>
+        <div className="ep-container ep-intro">
+          <p className="mr-eyebrow">{t.philosophy.eyebrow}</p>
+          <div className="ep-stack ep-stack--lg">
+            <ScrubText text={t.philosophy.text} className="ep-statement ep-statement--wide" />
             <Link className="mr-btn mr-btn--secondary" style={{ justifySelf: "start" }} href={`${base}/villa`}>{t.philosophy.cta}</Link>
           </div>
-          <ImageMaskReveal className="ep-duo__main" src={img("outdoor-09")} alt={t.alt.olive} ratio="4 / 5" />
-          <Drift className="ep-duo__float" amount={70}>
-            <div className="mr-m-media" style={{ aspectRatio: "4 / 3" }}><img src={img("indoor-14")} alt={t.alt.view} loading="lazy" /></div>
-          </Drift>
         </div>
-        <div className="ep-container" style={{ marginTop: "var(--section)" }}>
+        <div className="ep-container ep-pair" style={{ marginTop: "var(--section)" }}>
+          <Frame src={img("outdoor-09")} alt={t.alt.olive} speed={8} label={t.rooms.view} />
+          <Frame src={img("outdoor-05")} alt={t.alt.facade} speed={-14} arch />
+          <div className="ep-pair__note ep-stack">
+            <Title lines={t.brand.mottoA} className="mr-h3" />
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Mottos */}
+      <Marquee words={t.mottos} />
+
+      {/* 4. The arch of the logo opens onto the pool */}
+      <ArchReveal media={<PoolImage name="outdoor-11" alt={t.alt.poolNight} />} title={<p className="ep-display">{t.pool.lines[0]}<br /><em>{t.pool.lines[1]}</em></p>}>
+        <p className="mr-eyebrow">{t.pool.eyebrow}</p>
+        <h2 className="mr-h2">{t.pool.lines[0]} <em>{t.pool.lines[1]}</em></h2>
+        <p className="mr-lead">{t.pool.text}</p>
+      </ArchReveal>
+
+      {/* 5. The two villas */}
+      <section className="ep-section">
+        <div className="ep-container ep-stack" style={{ marginBottom: "var(--section)" }}>
+          <p className="mr-eyebrow">{t.rooms.eyebrow}</p>
+          <Title lines={t.rooms.lines} className="ep-display" />
+          <p className="mr-lead mr-muted">{t.rooms.lead}</p>
+        </div>
+        <div className="ep-container ep-villas">
+          {units.map((unit, index) => <VillaBlock key={unit.id} unit={unit} locale={locale} t={t} index={index} reverse={index % 2 === 1} />)}
+        </div>
+      </section>
+
+      {/* 6. A walk through the estate: vertical scroll moves the photographs sideways */}
+      <HorizontalScroll
+        label={t.brand.journeyEyebrow}
+        head={<>
+          <div className="ep-stack"><p className="mr-eyebrow">{t.brand.journeyEyebrow}</p><Title lines={t.brand.journeyLines} /></div>
+          <Link className="mr-btn mr-btn--secondary" href={`${base}/gallery`}>{t.nav.gallery}</Link>
+        </>}
+      >
+        {journey.map((shot, index) => (
+          <Link className="ep-rcard" key={shot.name} href={`${base}/gallery`} data-cursor={t.rooms.view}>
+            <div className="ep-rcard__media"><img src={img(shot.name)} alt={shot.alt} loading="lazy" /><span className="ep-rcard__idx">{String(index + 1).padStart(2, "0")}</span></div>
+            <div className="ep-rcard__foot"><h3>{shot.alt}</h3></div>
+          </Link>
+        ))}
+      </HorizontalScroll>
+
+      {/* 7. Outdoor living: scenes that slide over each other */}
+      <section className="ep-section">
+        <div className="ep-container ep-stack ep-stack--lg">
+          <div className="ep-motto">
+            <p className="mr-eyebrow">{t.living.label}</p>
+            <ScrubText text={t.brand.mottoC} />
+          </div>
+          <Scenes>
+            {t.living.steps.map((step, index) => (
+              <article className="ep-scene" key={step.title}>
+                <img src={img(scenes[index].name)} alt={scenes[index].alt} loading="lazy" />
+                <div className="ep-scene__body">
+                  <p className="mr-eyebrow">{step.eyebrow}</p>
+                  <h3 className="mr-h2">{step.title}</h3>
+                  <p className="mr-lead">{step.text}</p>
+                </div>
+              </article>
+            ))}
+          </Scenes>
+        </div>
+      </section>
+
+      {/* 8. The estate in numbers */}
+      <section className="ep-section ep-section--inverse mr-on-inverse">
+        <div className="ep-container ep-stack ep-stack--lg">
+          <div className="ep-stack"><p className="mr-eyebrow">{t.brand.statsEyebrow}</p><Title lines={t.brand.mottoB} /></div>
           <Stagger selector=".ep-facts > div">
-            <dl className="ep-facts">
-              {t.facts.map((fact) => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}
+            <dl className="ep-facts ep-facts--big">
+              {t.facts.map((fact) => <div key={fact.label}><dt>{fact.label}</dt><dd><CountUp value={Number(fact.value)} /></dd></div>)}
             </dl>
           </Stagger>
         </div>
       </section>
 
-      {/* 3. Rooms, asymmetric */}
-      <section className="ep-section ep-section--alt">
+      {/* 9. Discover Corinth */}
+      <section className="ep-section">
         <div className="ep-container ep-stack ep-stack--lg">
           <div className="ep-stack">
-            <p className="mr-eyebrow">{t.rooms.eyebrow}</p>
-            <AnimatedHeading lines={t.rooms.lines} />
-            <p className="mr-lead mr-muted">{t.rooms.lead}</p>
-          </div>
-          <div className="ep-rooms">
-            {units.map((unit, index) => (
-              <FadeInSection as="div" key={unit.id}><RoomCard unit={unit} locale={locale} t={t} wide={index % 4 === 0 || index % 4 === 3} /></FadeInSection>
-            ))}
-          </div>
-          <Link className="mr-btn mr-btn--secondary" style={{ justifySelf: "start" }} href={`${base}/accommodation`}>{t.rooms.all}</Link>
-        </div>
-      </section>
-
-      {/* 4. The pool: full-screen parallax */}
-      <ParallaxSection src={img("outdoor-11")} alt={t.alt.poolNight} minHeight="110dvh">
-        <div className="ep-stack" style={{ maxWidth: 720 }}>
-          <p className="mr-eyebrow">{t.pool.eyebrow}</p>
-          <AnimatedHeading lines={t.pool.lines} />
-          <SplitTextReveal text={t.pool.text} />
-        </div>
-      </ParallaxSection>
-
-      {/* 5. Outdoor living: the one pinned story of the page */}
-      <PinnedStorySection
-        label={t.living.label}
-        steps={t.living.steps.map((step, index) => ({ ...step, src: img(stepPhotos[index].name), alt: stepPhotos[index].alt }))}
-      />
-
-      {/* 6. Discover Corinth */}
-      <section className="ep-section">
-        <div className="ep-container ep-grid">
-          <div className="ep-stack" style={{ gridColumn: "1 / -1" }}>
             <p className="mr-eyebrow">{t.explore.eyebrow}</p>
-            <AnimatedHeading lines={t.explore.lines} />
+            <Title lines={t.explore.lines} className="ep-display" />
             <p className="mr-lead mr-muted">{t.explore.lead}</p>
           </div>
-          <div style={{ gridColumn: "1 / -1", marginTop: "var(--space-12)" }}>
-            <ParallaxImage src={img("indoor-14")} alt={t.alt.view} ratio="21 / 9" amount={10} />
-          </div>
-          <div style={{ gridColumn: "1 / -1", marginTop: "var(--space-12)" }}>
-            <Stagger className="ep-places" selector=".ep-place">
-              {places.slice(0, 4).map((place, index) => (
-                <article className="ep-place" key={place.slug}>
-                  <span className="ep-number">{String(index + 1).padStart(2, "0")}</span>
-                  <div>
-                    <p className="mr-eyebrow">{t.explore.categories[place.category]}</p>
-                    <h3 className="mr-h3">{t.places[place.slug].name}</h3>
-                  </div>
-                  <p className="mr-body mr-muted">{t.places[place.slug].summary}</p>
-                  <p className="mr-tag">{t.explore.visit}: {t.places[place.slug].duration}</p>
-                </article>
-              ))}
-            </Stagger>
-          </div>
-          <Link className="mr-btn mr-btn--secondary" style={{ gridColumn: "1 / -1", justifySelf: "start", marginTop: "var(--space-8)" }} href={`${base}/explore-corinth`}>{t.explore.cta}</Link>
-        </div>
-        {posts.length ? (
-          <div className="ep-container ep-stack" style={{ marginTop: "var(--section)" }}>
-            <p className="mr-eyebrow">{t.explore.journal}</p>
-            <div className="ep-journal">
-              {posts.map((post) => post.translations[0] ? (
-                <Link className="ep-post" key={post.id} href={`${base}/explore-corinth/${post.slug}`}>
-                  <span className="mr-tag">{post.publishedAt ? longDate(post.publishedAt, locale) : ""}</span>
-                  <h3 className="mr-h3">{post.translations[0].title}</h3>
-                  <p className="mr-body mr-muted">{post.translations[0].excerpt}</p>
-                </Link>
-              ) : null)}
+          <Stagger className="ep-places" selector=".ep-place">
+            {places.slice(0, 6).map((place, index) => (
+              <Link className="ep-place" key={place.slug} href={`${base}/explore-corinth#place-${place.slug}`} style={{ color: "inherit", textDecoration: "none" }}>
+                <span className="ep-number">{String(index + 1).padStart(2, "0")}</span>
+                <div>
+                  <p className="mr-eyebrow">{t.explore.categories[place.category]}</p>
+                  <h3 className="mr-h3">{t.places[place.slug].name}</h3>
+                </div>
+                <p className="mr-body mr-muted">{t.places[place.slug].summary}</p>
+                <p className="mr-tag">{t.explore.visit}: {t.places[place.slug].duration}</p>
+              </Link>
+            ))}
+          </Stagger>
+          <Link className="mr-btn mr-btn--secondary" style={{ justifySelf: "start" }} href={`${base}/explore-corinth`}>{t.explore.cta}</Link>
+          {posts.length ? (
+            <div className="ep-stack" style={{ marginTop: "var(--space-12)" }}>
+              <p className="mr-eyebrow">{t.explore.journal}</p>
+              <div className="ep-journal">
+                {posts.map((post) => post.translations[0] ? (
+                  <Link className="ep-post" key={post.id} href={`${base}/explore-corinth/${post.slug}`}>
+                    <span className="mr-tag">{post.publishedAt ? longDate(post.publishedAt, locale) : ""}</span>
+                    <h3 className="mr-h3">{post.translations[0].title}</h3>
+                    <p className="mr-body mr-muted">{post.translations[0].excerpt}</p>
+                  </Link>
+                ) : null)}
+              </div>
             </div>
-          </div>
-        ) : null}
-      </section>
-
-      {/* 7. Reserve */}
-      <section id="reserve" className="ep-section ep-section--inverse mr-on-inverse">
-        <div className="ep-container ep-grid">
-          <div className="ep-stack" style={{ gridColumn: "1 / -1" }}>
-            <p className="mr-eyebrow">{t.reserve.eyebrow}</p>
-            <AnimatedHeading lines={t.reserve.lines} />
-            <p className="mr-lead" style={{ color: "var(--text-inverse-muted)" }}>{t.reserve.text}</p>
-            <div><MagneticButton><Link className="mr-btn mr-btn--inverse" href={`${base}/booking`}>{t.reserve.cta}</Link></MagneticButton></div>
-          </div>
+          ) : null}
         </div>
       </section>
 
-      {/* 8. Concierge */}
-      <section className="ep-section">
-        <div className="ep-container ep-grid ep-duo ep-duo--reverse">
-          <div className="ep-duo__text ep-stack">
-            <p className="mr-eyebrow">{t.concierge.eyebrow}</p>
-            <AnimatedHeading lines={t.concierge.lines} />
-            <p className="mr-lead mr-muted">{t.concierge.text}</p>
-            <div className="mr-row">
-              <a className="mr-btn" href={contact.phoneHref}>{t.concierge.call}</a>
-              <Link className="mr-btn mr-btn--secondary" href={`${base}/contact`}>{t.concierge.email}</Link>
-            </div>
-          </div>
-          <ImageMaskReveal className="ep-duo__main" src={img("indoor-15")} alt={t.alt.lounge} ratio="4 / 5" />
+      {/* 10. Reserve */}
+      <ParallaxCover id="reserve" media={<PoolImage name="outdoor-10" alt={t.alt.poolView} />}>
+        <div className="ep-container ep-cta__body">
+          <p className="mr-eyebrow">{t.reserve.eyebrow}</p>
+          <Title lines={t.reserve.lines} className="ep-display" />
+          <p className="mr-lead">{t.reserve.text}</p>
+          <MagneticButton strength={0.4} max={24}><Link className="ep-round" href={`${base}/booking`}>{t.reserve.cta}</Link></MagneticButton>
+          <p className="mr-body"><a href={contact.phoneHref} style={{ color: "inherit" }}>{contact.phone}</a></p>
         </div>
-      </section>
+      </ParallaxCover>
 
-      <StickyBook title={t.bookbar.sticky} sub={t.bookbar.stickySub} href={`${base}/booking`} cta={t.bookbar.submit} />
     </>
   );
 }

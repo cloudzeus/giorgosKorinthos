@@ -1,10 +1,10 @@
 // Server-rendered building blocks shared by the public pages.
 import Link from "next/link";
 import type { Unit } from "@prisma/client";
-import { AnimatedHeading } from "@/components/ds/AnimatedHeading";
 import { HeroMotion } from "./motion-kit";
+import { Frame, Title } from "./fx";
 import { money, type Dict, type Locale } from "@/lib/i18n";
-import { fmt, img, unitPhotos, type UnitSlug } from "@/lib/site";
+import { fmt, img, pools, unitPhotos, type UnitSlug } from "@/lib/site";
 import { dayString } from "@/lib/booking";
 
 /** Date and guest form. A plain GET form: works without JavaScript and the URL can be shared. */
@@ -38,15 +38,59 @@ export function BookingBar({ locale, t, className = "ep-bookbar", values }: {
   );
 }
 
-/** Photograph hero for inner pages, with the same parallax as the homepage. */
+/**
+ * A pool photograph whose water moves. The same picture is drawn again in an SVG, clipped to the water
+ * surface and pushed through an animated displacement filter, so only the pool ripples. No JavaScript.
+ * The viewBox uses "slice", which crops exactly like object-fit: cover on the photograph underneath.
+ */
+export function PoolImage({ name, alt, className = "", priority }: { name: keyof typeof pools & string; alt: string; className?: string; priority?: boolean }) {
+  const { w, h, water } = pools[name];
+  const points = water.map(([x, y]) => [(x * w) / 100, (y * h) / 100]);
+  const xs = points.map((point) => point[0]), ys = points.map((point) => point[1]);
+  const box = { x: Math.min(...xs) - 20, y: Math.min(...ys) - 20, width: Math.max(...xs) - Math.min(...xs) + 40, height: Math.max(...ys) - Math.min(...ys) + 40 };
+  return (
+    <div className={`ep-pool ${className}`}>
+      <img src={img(name)} alt={alt} fetchPriority={priority ? "high" : undefined} loading={priority ? undefined : "lazy"} />
+      <svg className="ep-water" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+        <defs>
+          <filter id={`ripple-${name}`} filterUnits="userSpaceOnUse" {...box} colorInterpolationFilters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.006 0.02" numOctaves="2" seed="7" result="noise">
+              <animate attributeName="baseFrequency" dur="16s" values="0.006 0.02;0.011 0.034;0.006 0.02" repeatCount="indefinite" />
+            </feTurbulence>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="30" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+          <clipPath id={`water-${name}`}><polygon points={points.map((point) => point.join(",")).join(" ")} /></clipPath>
+        </defs>
+        <g clipPath={`url(#water-${name})`}>
+          <image href={img(name)} width={w} height={h} filter={`url(#ripple-${name})`} />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+/** Hero headline: masked lines, the last one in italic. */
+export function HeroTitle({ lines }: { lines: string[] }) {
+  return (
+    <h1 className="ep-display">
+      {lines.map((line, index) => (
+        <span className="mr-m-line" key={line}><span>{index === lines.length - 1 && lines.length > 1 ? <em>{line}</em> : line}</span></span>
+      ))}
+    </h1>
+  );
+}
+
+/** Photograph hero for inner pages, with the same choreography as the homepage. */
 export function PageHero({ src, alt, eyebrow, lines, lead }: { src: string; alt: string; eyebrow: string; lines: string[]; lead?: string }) {
   return (
     <HeroMotion className="ep-hero--page">
-      <img className="ep-hero__media" src={src} alt={alt} fetchPriority="high" />
+      <div className="ep-pool ep-hero__media"><img src={src} alt={alt} fetchPriority="high" /></div>
       <div className="ep-container ep-hero__body">
         <p className="mr-eyebrow" data-hero-fade>{eyebrow}</p>
-        <h1 className="mr-h1">{lines.map((line) => <span className="mr-m-line" key={line}><span>{line}</span></span>)}</h1>
-        {lead ? <p className="mr-lead" data-hero-fade>{lead}</p> : null}
+        <div className="ep-hero__row">
+          <HeroTitle lines={lines} />
+          {lead ? <p className="mr-lead" data-hero-fade>{lead}</p> : null}
+        </div>
       </div>
     </HeroMotion>
   );
@@ -55,38 +99,41 @@ export function PageHero({ src, alt, eyebrow, lines, lead }: { src: string; alt:
 /** Text-only page header on ivory, for pages without a hero photograph. */
 export function PageIntro({ eyebrow, lines, lead }: { eyebrow: string; lines: string[]; lead?: string }) {
   return (
-    <header className="ep-container ep-stack" style={{ paddingTop: "calc(72px + var(--section) / 1.6)", paddingBottom: "var(--space-12)" }}>
+    <header className="ep-container ep-stack" style={{ paddingTop: "calc(80px + var(--section) / 1.6)", paddingBottom: "var(--space-12)" }}>
       <p className="mr-eyebrow">{eyebrow}</p>
-      <AnimatedHeading as="h1" className="mr-h1" lines={lines} />
+      <Title as="h1" className="ep-display" lines={lines} />
       {lead ? <p className="mr-lead mr-muted">{lead}</p> : null}
     </header>
   );
 }
 
-export function RoomCard({ unit, locale, t, wide }: { unit: Unit; locale: Locale; t: Dict; wide?: boolean }) {
+/** One villa as a wide editorial block: arched photograph, facts and price. Alternates sides. */
+export function VillaBlock({ unit, locale, t, reverse, index }: { unit: Unit; locale: Locale; t: Dict; reverse?: boolean; index: number }) {
   const slug = unit.slug as UnitSlug;
   const copy = t.units[slug];
-  const photo = unitPhotos[slug]?.[0];
-  if (!copy || !photo) return null;
+  const shots = unitPhotos[slug];
+  if (!copy || !shots) return null;
+  const href = `/${locale}/accommodation/${unit.slug}`;
   return (
-    <article className="mr-room">
-      <Link className="ep-room__link" href={`/${locale}/accommodation/${unit.slug}`}>
-        <div className={`mr-room__media ep-room__media${wide ? " mr-room__media--wide" : ""}`}>
-          <img src={img(photo.name)} alt={t.alt[photo.alt]} loading="lazy" />
-        </div>
-        <div className="mr-room__body">
-          <p className="mr-eyebrow">{unit.building === "A" ? t.rooms.buildingA : t.rooms.buildingB}</p>
-          <h3 className="mr-h3">{copy.name}</h3>
-          <p className="mr-room__text">{copy.text}</p>
-        </div>
-        <div className="mr-room__foot">
-          <ul className="mr-room__tags">
-            <li className="mr-tag">{fmt(t.rooms.sleeps, { n: unit.capacity })}</li>
-            <li className="mr-tag">{copy.beds}</li>
-          </ul>
-          <span className="ep-price">{money(unit.priceCents, locale)} <span className="mr-tag">{t.rooms.perNight}</span></span>
-        </div>
+    <article className={`ep-villa${reverse ? " ep-villa--reverse" : ""}`}>
+      <Link href={href} className="ep-villa__media" aria-label={`${t.rooms.explore}: ${copy.name}`}>
+        <Frame src={img(shots[0].name)} alt={t.alt[shots[0].alt]} arch speed={10} label={t.rooms.view} className="ep-villa__main" />
+        <Frame src={img(shots[1].name)} alt={t.alt[shots[1].alt]} speed={-8} className="ep-villa__side" />
       </Link>
+      <div className="ep-villa__body">
+        <p className="ep-number">{String(index + 1).padStart(2, "0")}</p>
+        <Title lines={[copy.name]} className="ep-display" />
+        <p className="mr-lead mr-muted">{copy.text}</p>
+        <dl className="ep-specs">
+          <div><dt>{t.rooms.bedsLabel}</dt><dd>{copy.rooms.length}</dd></div>
+          <div><dt>{t.booking.guests}</dt><dd>{unit.capacity}</dd></div>
+          <div><dt>{t.rooms.from} / {t.rooms.perNight}</dt><dd>{money(unit.priceCents, locale)}</dd></div>
+        </dl>
+        <div className="mr-row">
+          <Link className="mr-btn" href={href}>{t.rooms.explore}</Link>
+          <Link className="mr-btn mr-btn--secondary" href={`/${locale}/booking`}>{t.rooms.book}</Link>
+        </div>
+      </div>
     </article>
   );
 }
@@ -102,3 +149,5 @@ export function Prose({ markdown }: { markdown: string }) {
     </div>
   );
 }
+
+export { fmt };

@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { alternates, getDict, longDate } from "@/lib/i18n";
 import { directionsUrl, img, places, villa } from "@/lib/site";
 import { ItineraryTimeline } from "@/components/ds/ItineraryTimeline";
-import { AnimatedHeading } from "@/components/ds/AnimatedHeading";
+import { Marquee, Title } from "@/components/site/fx";
 import { ExploreConcierge } from "@/components/site/islands";
 import { PageHero } from "@/components/site/parts";
 
@@ -25,6 +25,7 @@ export default async function ExplorePage({ params }: PageProps<"/[locale]/explo
     lat: place.lat,
     lng: place.lng,
     visit: t.places[place.slug].duration,
+    tip: t.places[place.slug].tip,
     directions: directionsUrl(place.lat, place.lng),
   }));
   const used = new Set(places.map((place) => place.category));
@@ -33,15 +34,17 @@ export default async function ExplorePage({ params }: PageProps<"/[locale]/explo
     <>
       <PageHero src={img("outdoor-04")} alt={t.alt.garden} eyebrow={t.explore.eyebrow.replace(/^\d+ \/ /, "")} lines={t.explore.lines} lead={t.explore.pageLead} />
       <section className="ep-section">
-        <div className="ep-container">
+        <div className="ep-container ep-stack ep-stack--lg">
+          <div className="ep-stack"><p className="mr-eyebrow">{t.brand.tipLabel}</p><Title lines={t.brand.guideTitle} className="ep-display" /></div>
           <ExploreConcierge
             places={rows}
             categories={categories}
             origin={{ name: t.explore.origin, ...villa }}
-            labels={{ filter: t.explore.filterLabel, all: t.explore.all, map: t.explore.mapLabel, directions: t.explore.directions, visit: t.explore.visit }}
+            labels={{ filter: t.explore.filterLabel, all: t.explore.all, map: t.explore.mapLabel, directions: t.explore.directions, visit: t.explore.visit, tip: t.brand.tipLabel }}
           />
         </div>
       </section>
+      <Marquee words={places.map((place) => t.places[place.slug].name)} />
       <section className="ep-section ep-section--alt">
         <div className="ep-container"><ItineraryTimeline title={t.explore.itinerary.title} summary={t.explore.itinerary.summary} stops={t.explore.itinerary.stops} /></div>
       </section>
@@ -49,7 +52,7 @@ export default async function ExplorePage({ params }: PageProps<"/[locale]/explo
         <div className="ep-container ep-stack ep-stack--lg">
           <div className="ep-stack">
             <p className="mr-eyebrow">{t.explore.journal}</p>
-            <AnimatedHeading lines={[t.explore.journalLead]} />
+            <Title lines={[t.explore.journalLead]} />
           </div>
           {posts.length ? (
             <div className="ep-journal">

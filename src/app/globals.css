@@ -66,9 +66,9 @@
   --danger: #9A3324; --danger-surface: #F3E2DC; --positive: var(--deep-olive); --positive-surface: #DDE3D8;
   --warning: #7A5A12; --warning-surface: #F2E8CC;
   --overlay: rgba(38, 40, 36, 0.45);
-  --font-display: var(--font-manrope), "Helvetica Neue", Arial, sans-serif;
-  --font-sans: var(--font-inter), "Helvetica Neue", Arial, sans-serif;
-  --font-serif: var(--font-cormorant), Georgia, serif;
+  --font-display: var(--font-noto), "Times New Roman", Georgia, serif;
+  --font-sans: var(--font-manrope), "Helvetica Neue", Arial, sans-serif;
+  --font-serif: var(--font-noto), Georgia, serif;
   --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px; --space-8: 32px; --space-12: 48px;
   --section: clamp(64px, 10vw, 160px);
   --radius-sm: 2px; --radius-md: 4px;
