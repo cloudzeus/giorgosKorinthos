@@ -55,7 +55,10 @@ export async function createManualReservation(formData: FormData) {
   const unitIds = formData.getAll("unit").map(String);
   const checkIn = parsed.success ? parseDay(parsed.data.in) : null;
   const checkOut = parsed.success ? parseDay(parsed.data.out) : null;
-  if (!parsed.success || !checkIn || !checkOut || nightsBetween(checkIn, checkOut) < 1 || !unitIds.length) redirect("/admin/reservations?error=form");
+  // Opened from the plan: return to the same month there.
+  const month = String(formData.get("back") ?? "");
+  const to = (result: string) => (/^\d{4}-\d{2}$/.test(month) ? `/admin/plan?m=${month}&${result}` : `/admin/reservations?${result}`);
+  if (!parsed.success || !checkIn || !checkOut || nightsBetween(checkIn, checkOut) < 1 || !unitIds.length) redirect(to("error=form"));
   const blocked = parsed.data.kind === "BLOCKED";
   try {
     const reservation = await createReservation({
@@ -66,11 +69,11 @@ export async function createManualReservation(formData: FormData) {
     });
     await audit(user.id, blocked ? "reservation.block" : "reservation.manual", "Reservation", reservation.id);
   } catch (error) {
-    if (error instanceof UnitsTakenError) redirect("/admin/reservations?error=taken");
+    if (error instanceof UnitsTakenError) redirect(to("error=taken"));
     throw error;
   }
   revalidatePath("/admin", "layout");
-  redirect("/admin/reservations?ok=1");
+  redirect(to("ok=1"));
 }
 
 // ── Rooms and rates ───────────────────────────────────────────

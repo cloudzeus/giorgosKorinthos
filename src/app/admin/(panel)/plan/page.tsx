@@ -3,9 +3,10 @@ import { ChevronLeft, ChevronRight, LogIn, LogOut, Home } from "lucide-react";
 import { can, requirePermission } from "@/auth";
 import { db } from "@/lib/db";
 import { addDays, dayString, parseDay } from "@/lib/booking";
-import { PageHead, Status, day, eur, unitLabel } from "@/components/admin/parts";
+import { Alert, PageHead, Status, day, eur, unitLabel } from "@/components/admin/parts";
 import { PlanBoard } from "@/components/admin/plan-board";
 import { planMove } from "../../ops-actions";
+import { createManualReservation } from "../../actions";
 
 export const metadata = { title: "Πλάνο κρατήσεων" };
 
@@ -50,6 +51,10 @@ export default async function PlanPage({ searchParams }: PageProps<"/admin/plan"
         </div>
       </PageHead>
 
+      {query.ok ? <Alert>Η καταχώριση αποθηκεύτηκε και οι ημερομηνίες δεσμεύτηκαν.</Alert> : null}
+      {query.error === "taken" ? <Alert bad>Η βίλα είναι ήδη πιασμένη σε αυτές τις ημερομηνίες. Δεν αποθηκεύτηκε τίποτα.</Alert> : null}
+      {query.error === "form" ? <Alert bad>Διαλέξτε βίλα και ημερομηνίες με την αναχώρηση μετά την άφιξη.</Alert> : null}
+
       <section className="ad-stats" aria-label="Σήμερα">
         <div className="ad-card ad-stat"><span className="ad-stat__label"><LogIn aria-hidden="true" strokeWidth={1.5} />Αφίξεις σήμερα</span><span className="ad-stat__value">{arriving.length}</span><span className="ad-stat__note">{arriving.map((stay) => stay.guestName).join(", ") || "Καμία άφιξη σήμερα."}</span></div>
         <div className="ad-card ad-stat"><span className="ad-stat__label"><LogOut aria-hidden="true" strokeWidth={1.5} />Αναχωρήσεις σήμερα</span><span className="ad-stat__value">{leaving.length}</span><span className="ad-stat__note">{leaving.map((stay) => stay.guestName).join(", ") || "Καμία αναχώρηση σήμερα."}</span></div>
@@ -62,6 +67,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/admin/plan"
         label={`Πλάνο ${MONTH.format(first)}`}
         canEdit={can(user.role, "reservations.write")}
         move={planMove}
+        create={createManualReservation}
         days={days.map((date) => ({ day: date.getUTCDate(), weekday: WEEKDAY.format(date), today: dayString(date) === dayString(today), weekend: [0, 6].includes(date.getUTCDay()) }))}
         units={units.map((unit) => ({ id: unit.id, label: unitLabel(unit.slug) }))}
         stays={stays.flatMap((stay) => stay.units.map((item) => {

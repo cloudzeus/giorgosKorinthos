@@ -11,8 +11,30 @@ import { deleteRate, saveRate } from "../../ops-actions";
 import { RowMenu } from "@/components/admin/client";
 import { day } from "@/components/admin/parts";
 import { Plus } from "lucide-react";
+import type { RatePeriod } from "@prisma/client";
+import { dayString } from "@/lib/booking";
 
 export const metadata = { title: "Βίλες και τιμές" };
+
+/** One form for a new seasonal price and for editing an existing one. */
+function RateForm({ unitId, rate }: { unitId: string; rate?: RatePeriod }) {
+  const id = rate?.id ?? unitId;
+  return (
+    <form className="ad-form" action={saveRate.bind(null, unitId, rate?.id ?? null)}>
+      <div className="ad-field"><label htmlFor={`rn-${id}`}>Όνομα περιόδου</label><input id={`rn-${id}`} name="name" placeholder="π.χ. Υψηλή σεζόν" defaultValue={rate?.name} required /></div>
+      <div className="ad-form__row">
+        <div className="ad-field"><label htmlFor={`rf-${id}`}>Από</label><input id={`rf-${id}`} name="from" type="date" defaultValue={rate ? dayString(rate.from) : undefined} required /></div>
+        <div className="ad-field"><label htmlFor={`rt-${id}`}>Έως και</label><input id={`rt-${id}`} name="to" type="date" defaultValue={rate ? dayString(rate.to) : undefined} required /></div>
+      </div>
+      <div className="ad-form__row">
+        <div className="ad-field"><label htmlFor={`rp-${id}`}>Τιμή ανά βραδιά (€)</label><input id={`rp-${id}`} name="price" inputMode="decimal" defaultValue={rate ? (rate.priceCents / 100).toString() : undefined} required /></div>
+        <div className="ad-field"><label htmlFor={`rm-${id}`}>Ελάχιστες βραδιές</label><input id={`rm-${id}`} name="minNights" type="number" min={1} max={30} defaultValue={rate?.minNights ?? 1} required /></div>
+      </div>
+      {rate ? <p className="ad-stat__note" style={{ margin: 0 }}>Η αλλαγή ισχύει για νέες κρατήσεις. Όσες έχουν ήδη γίνει κρατούν το ποσό τους.</p> : null}
+      <div className="ad-form__foot"><Button variant="primary" type="submit">Αποθήκευση</Button></div>
+    </form>
+  );
+}
 
 export default async function RoomsPage({ searchParams }: PageProps<"/admin/rooms">) {
   const user = await requirePermission("reservations.read");
@@ -64,18 +86,7 @@ export default async function RoomsPage({ searchParams }: PageProps<"/admin/room
             <div className="ad-card__head"><h2>{unitLabel(unit.slug)} · βασική {eur(unit.priceCents)}</h2>
               {write ? (
                 <FormModal variant="secondary" trigger={<><Plus size={16} strokeWidth={1.5} aria-hidden="true" />Νέα περίοδος</>} title={`Νέα περίοδος: ${unitLabel(unit.slug)}`}>
-                  <form className="ad-form" action={saveRate.bind(null, unit.id)}>
-                    <div className="ad-field"><label htmlFor={`rn-${unit.id}`}>Όνομα περιόδου</label><input id={`rn-${unit.id}`} name="name" placeholder="π.χ. Υψηλή σεζόν" required /></div>
-                    <div className="ad-form__row">
-                      <div className="ad-field"><label htmlFor={`rf-${unit.id}`}>Από</label><input id={`rf-${unit.id}`} name="from" type="date" required /></div>
-                      <div className="ad-field"><label htmlFor={`rt-${unit.id}`}>Έως και</label><input id={`rt-${unit.id}`} name="to" type="date" required /></div>
-                    </div>
-                    <div className="ad-form__row">
-                      <div className="ad-field"><label htmlFor={`rp-${unit.id}`}>Τιμή ανά βραδιά (€)</label><input id={`rp-${unit.id}`} name="price" inputMode="decimal" required /></div>
-                      <div className="ad-field"><label htmlFor={`rm-${unit.id}`}>Ελάχιστες βραδιές</label><input id={`rm-${unit.id}`} name="minNights" type="number" min={1} max={30} defaultValue={1} required /></div>
-                    </div>
-                    <div className="ad-form__foot"><Button variant="primary" type="submit">Αποθήκευση</Button></div>
-                  </form>
+                  <RateForm unitId={unit.id} />
                 </FormModal>
               ) : null}
             </div>
@@ -87,7 +98,12 @@ export default async function RoomsPage({ searchParams }: PageProps<"/admin/room
                     <TableCell><strong>{rate.name}</strong><br /><span className="ad-stat__note">{day(rate.from)} έως {day(rate.to)}</span></TableCell>
                     <TableCell>{eur(rate.priceCents)}<br /><span className={`ad-stat__note ${rate.priceCents >= unit.priceCents ? "ad-tone--good" : "ad-tone--warn"}`}>{rate.priceCents >= unit.priceCents ? "+" : ""}{Math.round(((rate.priceCents - unit.priceCents) / unit.priceCents) * 100)}% από τη βασική</span></TableCell>
                     <TableCell>{rate.minNights}</TableCell>
-                    <TableCell style={{ textAlign: "right" }}>{write ? <RowMenu label={`Ενέργειες για ${rate.name}`} actions={[{ label: "Διαγραφή περιόδου", action: deleteRate.bind(null, rate.id), danger: true, confirm: "Η περίοδος θα διαγραφεί και θα ισχύει ξανά η βασική τιμή. Συνέχεια;" }]} /> : null}</TableCell>
+                    <TableCell style={{ textAlign: "right" }}>{write ? (
+                      <div style={{ display: "inline-flex", gap: 4, alignItems: "center" }}>
+                        <FormModal variant="ghost" trigger="Επεξεργασία" title={`${rate.name}: ${unitLabel(unit.slug)}`}><RateForm unitId={unit.id} rate={rate} /></FormModal>
+                        <RowMenu label={`Ενέργειες για ${rate.name}`} actions={[{ label: "Διαγραφή περιόδου", action: deleteRate.bind(null, rate.id), danger: true, confirm: "Η περίοδος θα διαγραφεί και θα ισχύει ξανά η βασική τιμή. Συνέχεια;" }]} />
+                      </div>
+                    ) : null}</TableCell>
                   </TableRow>
                 ))}</TableBody>
               </Table>

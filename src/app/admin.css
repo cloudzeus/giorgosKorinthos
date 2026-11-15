@@ -202,3 +202,10 @@
 .ad-test__result.is-ok { color: var(--positive); font-weight: 500; }
 .ad-test__result.is-bad { color: var(--danger); font-weight: 500; }
 .ad-settings__grid .ad-field { align-content: start; }
+
+/* Plan: empty days are buttons that start a new reservation */
+button.ad-plan__cell { position: relative; padding: 0; border-width: 1px 0 0 1px; border-style: solid; border-color: var(--border-subtle); border-radius: 0; background: none; cursor: pointer; font: inherit; }
+button.ad-plan__cell:hover { background: rgba(52, 63, 53, 0.08); }
+button.ad-plan__cell:hover::after { content: "+"; position: absolute; inset: 0; display: grid; place-content: center; font-size: var(--fs-16); color: var(--text-muted); }
+button.ad-plan__cell:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
+button.ad-plan__cell.is-today { background: rgba(179, 155, 120, 0.16); }

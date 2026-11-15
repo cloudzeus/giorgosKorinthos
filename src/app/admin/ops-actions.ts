@@ -165,13 +165,16 @@ export async function generateCleaning() {
 }
 
 // ── Seasonal rates ────────────────────────────────────────────
-export async function saveRate(unitId: string, formData: FormData) {
+export async function saveRate(unitId: string, rateId: string | null, formData: FormData) {
   const user = await requirePermission("rooms.write");
   const from = parseDay(text(formData.get("from"))), to = parseDay(text(formData.get("to")));
   const price = euros(formData.get("price")), minNights = Number(formData.get("minNights") || 1);
   if (!from || !to || to < from || !Number.isFinite(price) || price <= 0 || !Number.isInteger(minNights) || minNights < 1 || minNights > 30 || !text(formData.get("name"))) redirect("/admin/rooms?error=rate");
-  await db.ratePeriod.create({ data: { unitId, name: text(formData.get("name"), 80), from, to, priceCents: price, minNights } });
-  await audit(user.id, "rate.create", "Unit", unitId);
+  const data = { name: text(formData.get("name"), 80), from, to, priceCents: price, minNights };
+  // updateMany with the villa in the filter: a period can only be edited through its own villa.
+  if (rateId) await db.ratePeriod.updateMany({ where: { id: rateId, unitId }, data });
+  else await db.ratePeriod.create({ data: { ...data, unitId } });
+  await audit(user.id, rateId ? "rate.update" : "rate.create", "Unit", unitId);
   revalidatePath("/", "layout");
   redirect("/admin/rooms?ok=rate");
 }
