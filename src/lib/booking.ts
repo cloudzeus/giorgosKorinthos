@@ -61,6 +61,24 @@ export async function takenUnitIds(checkIn: Date, checkOut: Date, tx: Prisma.Tra
   return new Set(rows.map((row) => row.unitId));
 }
 
+/** Nights (YYYY-MM-DD) in the window on which every active villa is taken, for the booking calendar. */
+export async function fullNights(from: Date, to: Date) {
+  const [active, rows] = await Promise.all([
+    db.unit.count({ where: { active: true } }),
+    db.reservation.findMany({ where: occupying(from, to), select: { checkIn: true, checkOut: true, units: { select: { unitId: true, unit: { select: { active: true } } } } } }),
+  ]);
+  const taken = new Map<string, Set<string>>();
+  for (const row of rows) {
+    for (let night = row.checkIn < from ? from : row.checkIn; night < row.checkOut && night < to; night = addDays(night, 1)) {
+      const key = dayString(night);
+      const set = taken.get(key) ?? new Set<string>();
+      for (const item of row.units) if (item.unit.active) set.add(item.unitId);
+      taken.set(key, set);
+    }
+  }
+  return [...taken].filter(([, set]) => active > 0 && set.size >= active).map(([day]) => day);
+}
+
 export class UnitsTakenError extends Error {}
 export class MinNightsError extends Error {
   constructor(public nights: number) { super("min nights"); }

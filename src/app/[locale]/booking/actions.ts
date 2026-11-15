@@ -11,6 +11,7 @@ const guest = z.object({
   email: z.string().trim().email().max(200),
   phone: z.string().trim().max(40).optional(),
   notes: z.string().trim().max(2000).optional(),
+  arrival: z.string().trim().max(40).optional(),
   consent: z.literal("on"),
   adults: z.coerce.number().int().min(1).max(11),
   children: z.coerce.number().int().min(0).max(10),
@@ -42,7 +43,7 @@ export async function reserve(formData: FormData) {
   try {
     reservation = await createReservation({
       unitIds, checkIn, checkOut, adults: data.adults, children: data.children, extraIds: formData.getAll("extra").map(String),
-      guestName: data.name, guestEmail: data.email.toLowerCase(), guestPhone: data.phone, notes: data.notes, locale,
+      guestName: data.name, guestEmail: data.email.toLowerCase(), guestPhone: data.phone, notes: [data.arrival ? `ETA: ${data.arrival}` : "", data.notes ?? ""].filter(Boolean).join("\n") || undefined, locale,
     });
   } catch (error) {
     if (error instanceof UnitsTakenError) redirect(back("taken"));
