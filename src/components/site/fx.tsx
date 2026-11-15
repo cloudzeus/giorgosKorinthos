@@ -226,3 +226,51 @@ export function AutoVideo({ src, poster, className = "", label }: { src: string;
   }, [reduced]);
   return <video ref={ref} className={className} src={src} poster={poster ?? undefined} muted loop playsInline preload="none" aria-label={label} />;
 }
+
+/**
+ * A botanical illustration behind a section. It drifts in as the section arrives, keeps moving slower
+ * than the page, and fades away as the section leaves. Decorative: hidden from assistive technology.
+ * Place it as the first child of a `position: relative` section and position it with a `.ep-deco--*` class.
+ */
+export function Botanical({ name, className = "", from = "right", rotate = 10, drift = 80 }: {
+  name: "branch-gold-a" | "branch-gold-b" | "branch-gold-c" | "sprig-gold-a" | "sprig-gold-b" | "olive-a" | "olive-b" | "olive-c" | "olive-garland";
+  className?: string;
+  from?: "left" | "right";
+  rotate?: number;
+  drift?: number;
+}) {
+  const ref = useRef<HTMLImageElement>(null);
+  useGsap(ref, (root) => {
+    const section = root.parentElement!;
+    const side = from === "right" ? 1 : -1;
+    // Arrive: slide in from its side, uncurl and settle.
+    gsap.fromTo(root, { autoAlpha: 0, xPercent: 22 * side, rotate: rotate * side, scale: 0.86 }, {
+      autoAlpha: 1, xPercent: 0, rotate: 0, scale: 1, ease: "power2.out",
+      scrollTrigger: { trigger: section, start: "top 92%", end: "top 30%", scrub: 0.8 },
+    });
+    // Leave: lift away and vanish before the next section takes over.
+    gsap.fromTo(root, { autoAlpha: 1 }, {
+      autoAlpha: 0, xPercent: -10 * side, rotate: -rotate * 0.6 * side, ease: "power1.in", immediateRender: false,
+      scrollTrigger: { trigger: section, start: "bottom 62%", end: "bottom 8%", scrub: 0.8 },
+    });
+    // Depth: always a little slower than the page.
+    gsap.fromTo(root, { y: drift }, { y: -drift, ease: "none", scrollTrigger: { trigger: section, start: "top bottom", end: "bottom top", scrub: true } });
+  }, [name, from, rotate, drift]);
+  return <img ref={ref} className={`ep-deco ${className}`} src={`/decor/${name}.webp`} alt="" aria-hidden="true" loading="lazy" decoding="async" />;
+}
+
+/** Section divider: a gold olive sprig between two hairlines that draw outwards. */
+export function Ornament({ sprig = "sprig-gold-a" }: { sprig?: "sprig-gold-a" | "sprig-gold-b" }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useGsap(ref, (root) => {
+    const timeline = gsap.timeline({ scrollTrigger: { trigger: root, start: "top 88%", once: true } });
+    timeline
+      .from(root.querySelector("img"), { autoAlpha: 0, scale: 0.6, rotate: -20, duration: 1.2, ease: "power3.out" })
+      .from(root.querySelectorAll("i"), { scaleX: 0, duration: 1.2, ease: "power3.inOut" }, 0.15);
+  });
+  return (
+    <div ref={ref} className="ep-ornament" aria-hidden="true">
+      <i /><img src={`/decor/${sprig}.webp`} alt="" loading="lazy" /><i />
+    </div>
+  );
+}

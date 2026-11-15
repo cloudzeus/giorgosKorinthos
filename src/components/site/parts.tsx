@@ -2,7 +2,7 @@
 import Link from "next/link";
 import type { Unit } from "@prisma/client";
 import { HeroMotion } from "./motion-kit";
-import { AutoVideo, Frame, Title } from "./fx";
+import { AutoVideo, Botanical, Frame, Title } from "./fx";
 import { money, type Dict, type Locale } from "@/lib/i18n";
 import { fmt, img, pools, unitPhotos, type UnitSlug } from "@/lib/site";
 import { dayString } from "@/lib/booking";
@@ -99,10 +99,13 @@ export function PageHero({ src, alt, eyebrow, lines, lead, video }: { src: strin
 /** Text-only page header on ivory, for pages without a hero photograph. */
 export function PageIntro({ eyebrow, lines, lead }: { eyebrow: string; lines: string[]; lead?: string }) {
   return (
-    <header className="ep-container ep-stack" style={{ paddingTop: "calc(80px + var(--section) / 1.6)", paddingBottom: "var(--space-12)" }}>
+    <header className="ep-leafy" style={{ paddingTop: "calc(80px + var(--section) / 1.6)", paddingBottom: "var(--space-12)" }}>
+      <Botanical name="branch-gold-c" className="ep-deco--tr ep-deco--sm" from="right" rotate={16} drift={50} />
+      <div className="ep-container ep-stack">
       <p className="mr-eyebrow">{eyebrow}</p>
       <Title as="h1" className="ep-display" lines={lines} />
       {lead ? <p className="mr-lead mr-muted">{lead}</p> : null}
+      </div>
     </header>
   );
 }

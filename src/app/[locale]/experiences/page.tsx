@@ -3,7 +3,7 @@ import { Check } from "lucide-react";
 import { alternates, getDict } from "@/lib/i18n";
 import { img } from "@/lib/site";
 import { ParallaxImage } from "@/components/ds/ParallaxImage";
-import { Stagger } from "@/components/site/fx";
+import { Botanical, Stagger } from "@/components/site/fx";
 import { PageIntro, PoolImage } from "@/components/site/parts";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/experiences">): Promise<Metadata> {
@@ -17,7 +17,9 @@ export default async function ExperiencesPage({ params }: PageProps<"/[locale]/e
     <>
       <PageIntro eyebrow={t.experiences.eyebrow} lines={t.experiences.lines} lead={t.experiences.lead} />
       <div className="ep-container"><PoolImage name="outdoor-01" alt={t.alt.poolDay} className="ep-pool--band" /></div>
-      <section className="ep-section">
+      <section className="ep-section ep-leafy">
+        <Botanical name="olive-b" className="ep-deco--tr" from="right" rotate={10} drift={100} />
+        <Botanical name="branch-gold-a" className="ep-deco--bl ep-deco--faint" from="left" rotate={-14} />
         <div className="ep-container">
           <Stagger className="ep-cols">
             {t.experiences.groups.map((group) => (

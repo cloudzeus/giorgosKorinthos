@@ -5,7 +5,7 @@ import { contact, img, placeImg, places } from "@/lib/site";
 import { slotMap } from "@/lib/media";
 import { MagneticButton } from "@/components/ds/MagneticButton";
 import { HeroMotion } from "@/components/site/motion-kit";
-import { ArchReveal, AutoVideo, CountUp, Frame, HorizontalScroll, Marquee, ParallaxCover, Scenes, ScrubText, Stagger, Title } from "@/components/site/fx";
+import { ArchReveal, AutoVideo, Botanical, CountUp, Frame, HorizontalScroll, Marquee, Ornament, ParallaxCover, Scenes, ScrubText, Stagger, Title } from "@/components/site/fx";
 import { BookingBar, HeroTitle, PoolImage, VillaBlock } from "@/components/site/parts";
 
 export default async function Home({ params }: PageProps<"/[locale]">) {
@@ -41,7 +41,9 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
       </HeroMotion>
 
       {/* 2. Statement that lights up with the scroll, and two photographs at different speeds */}
-      <section id="philosophy" className="ep-section">
+      <section id="philosophy" className="ep-section ep-leafy">
+        <Botanical name="branch-gold-a" className="ep-deco--tr" from="right" rotate={14} />
+        <Botanical name="olive-a" className="ep-deco--bl ep-deco--sm" from="left" rotate={-10} drift={120} />
         <div className="ep-container ep-intro">
           <p className="mr-eyebrow">{t.philosophy.eyebrow}</p>
           <div className="ep-stack ep-stack--lg">
@@ -69,7 +71,10 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
       </ArchReveal>
 
       {/* 5. The two villas */}
-      <section className="ep-section">
+      <Ornament />
+      <section className="ep-section ep-leafy">
+        <Botanical name="olive-c" className="ep-deco--mr" from="right" rotate={12} drift={140} />
+        <Botanical name="branch-gold-b" className="ep-deco--ml ep-deco--faint" from="left" rotate={-16} />
         <div className="ep-container ep-stack" style={{ marginBottom: "var(--section)" }}>
           <p className="mr-eyebrow">{t.rooms.eyebrow}</p>
           <Title lines={t.rooms.lines} className="ep-display" />
@@ -97,7 +102,9 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
       </HorizontalScroll>
 
       {/* 7. Outdoor living: scenes that slide over each other */}
-      <section className="ep-section">
+      <section className="ep-section ep-leafy">
+        <Botanical name="olive-garland" className="ep-deco--tl" from="left" rotate={-8} drift={60} />
+        <Botanical name="branch-gold-c" className="ep-deco--tr ep-deco--sm" from="right" rotate={18} drift={60} />
         <div className="ep-container ep-stack ep-stack--lg">
           <div className="ep-motto">
             <p className="mr-eyebrow">{t.living.label}</p>
@@ -119,7 +126,9 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
       </section>
 
       {/* 8. The estate in numbers */}
-      <section className="ep-section ep-section--inverse mr-on-inverse">
+      <section className="ep-section ep-section--inverse mr-on-inverse ep-leafy">
+        <Botanical name="branch-gold-a" className="ep-deco--br ep-deco--faint" from="right" rotate={12} />
+        <Botanical name="sprig-gold-b" className="ep-deco--tl ep-deco--xs ep-deco--faint" from="left" rotate={-24} drift={40} />
         <div className="ep-container ep-stack ep-stack--lg">
           <div className="ep-stack"><p className="mr-eyebrow">{t.brand.statsEyebrow}</p><Title lines={t.brand.mottoB} /></div>
           <Stagger selector=".ep-facts > div">
@@ -131,7 +140,9 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
       </section>
 
       {/* 9. Discover Corinth */}
-      <section className="ep-section">
+      <Ornament sprig="sprig-gold-b" />
+      <section className="ep-section ep-leafy">
+        <Botanical name="olive-b" className="ep-deco--tr" from="right" rotate={10} drift={100} />
         <div className="ep-container ep-stack ep-stack--lg">
           <div className="ep-stack">
             <p className="mr-eyebrow">{t.explore.eyebrow}</p>

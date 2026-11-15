@@ -5,7 +5,7 @@ import { alternates, getDict, longDate } from "@/lib/i18n";
 import { directionsUrl, img, placeImg, placePhotos, places, villa } from "@/lib/site";
 import { slotMap } from "@/lib/media";
 import { ItineraryTimeline } from "@/components/ds/ItineraryTimeline";
-import { Marquee, Title } from "@/components/site/fx";
+import { Botanical, Marquee, Ornament, Title } from "@/components/site/fx";
 import { ExploreConcierge } from "@/components/site/islands";
 import { PageHero } from "@/components/site/parts";
 
@@ -59,7 +59,9 @@ export default async function ExplorePage({ params }: PageProps<"/[locale]/explo
       <section className="ep-section ep-section--alt">
         <div className="ep-container"><ItineraryTimeline title={t.explore.itinerary.title} summary={t.explore.itinerary.summary} stops={t.explore.itinerary.stops} /></div>
       </section>
-      <section className="ep-section" id="journal">
+      <Ornament sprig="sprig-gold-b" />
+      <section className="ep-section ep-leafy" id="journal">
+        <Botanical name="olive-a" className="ep-deco--br ep-deco--sm" from="right" rotate={10} />
         <div className="ep-container ep-stack ep-stack--lg">
           <div className="ep-stack">
             <p className="mr-eyebrow">{t.explore.journal}</p>

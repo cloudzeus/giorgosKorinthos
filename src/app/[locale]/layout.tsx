@@ -6,7 +6,7 @@ import { alternates, getDict } from "@/lib/i18n";
 import { contact, img } from "@/lib/site";
 import { LogoFull, LogoHorizontal, LogoMark, LogoWordmark } from "@/components/site/Logo";
 import { HeaderShell, MotionToggle, Providers, RouteTransition } from "@/components/site/motion-kit";
-import { Cursor } from "@/components/site/fx";
+import { Botanical, Cursor } from "@/components/site/fx";
 
 // Display: a high-contrast serif with Greek. Text and UI: Manrope.
 const noto = Noto_Serif_Display({ subsets: ["latin", "greek"], weight: ["300", "400"], style: ["normal", "italic"], variable: "--font-noto", display: "swap" });
@@ -58,7 +58,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
             contact={<><a href={contact.phoneHref}>{contact.phone}</a><a href={`mailto:${contact.email}`}>{contact.email}</a><span>{t.contact.address}</span></>}
           />
           <main id="main"><RouteTransition>{children}</RouteTransition></main>
-          <footer className="ep-footer">
+          <footer className="ep-footer ep-leafy">
+            <Botanical name="branch-gold-b" className="ep-deco--br ep-deco--faint" from="right" rotate={14} drift={40} />
             <div className="ep-container">
               <div className="ep-footer__top">
                 <div className="ep-stack">
