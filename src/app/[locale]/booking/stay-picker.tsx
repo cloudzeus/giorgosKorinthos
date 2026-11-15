@@ -59,7 +59,7 @@ export function StayPicker({ locale, today, value, blocked, labels }: {
           <button type="button" className={second ? undefined : "bk-cal__next"} aria-label={labels.next} disabled={month >= minMonth + 17} onClick={() => setMonth(month + 1)}><ChevronRight aria-hidden="true" strokeWidth={1.5} /></button>
         </div>
         <div className="bk-days">
-          {weekdays.map((name) => <i key={name}>{name}</i>)}
+          {weekdays.map((name) => <span className="bk-dow" key={name}>{name}</span>)}
           {Array.from({ length: lead }, (_, i) => <span key={`lead-${i}`} />)}
           {Array.from({ length: count }, (_, i) => {
             const day = `${year}-${pad(m + 1)}-${pad(i + 1)}`;

@@ -36,7 +36,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
         </div>
         <div className="ep-container ep-hero__foot" data-hero-fade>
           <BookingBar locale={locale} t={t} />
-          <a className="ep-scrollcue" href="#philosophy"><i aria-hidden="true" />{t.hero.scroll}</a>
+          <a className="ep-scrollcue" href="#philosophy"><span className="ep-line" aria-hidden="true" />{t.hero.scroll}</a>
         </div>
       </HeroMotion>
 
@@ -162,7 +162,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
                   <h3 className="mr-h3">{t.places[place.slug].name}</h3>
                 </div>
                 <p className="mr-body mr-muted">{t.places[place.slug].summary}</p>
-                <img className="ep-place__thumb" src={media.get(`place.${place.slug}.photo`)?.url ?? media.get(`place.${place.slug}.video`)?.poster ?? placeImg(place.slug)} alt="" loading="lazy" />
+                <img className="ep-place__thumb" src={media.get(`place.${place.slug}.photo`)?.url ?? media.get(`place.${place.slug}.video`)?.poster ?? placeImg(place.slug)} alt={t.places[place.slug].name} loading="lazy" />
               </Link>
             ))}
           </Stagger>

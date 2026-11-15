@@ -278,11 +278,11 @@ export function Ornament({ sprig = "sprig-gold-a" }: { sprig?: "sprig-gold-a" | 
     const timeline = gsap.timeline({ scrollTrigger: { trigger: root, start: "top 88%", once: true } });
     timeline
       .from(root.querySelector("img"), { autoAlpha: 0, scale: 0.6, rotate: -20, duration: 1.2, ease: "power3.out" })
-      .from(root.querySelectorAll("i"), { scaleX: 0, duration: 1.2, ease: "power3.inOut" }, 0.15);
+      .from(root.querySelectorAll(".ep-line"), { scaleX: 0, duration: 1.2, ease: "power3.inOut" }, 0.15);
   });
   return (
     <div ref={ref} className="ep-ornament" aria-hidden="true">
-      <i /><img src={`/decor/${sprig}.webp`} alt="" loading="lazy" /><i />
+      <span className="ep-line" /><img src={`/decor/${sprig}.webp`} alt="" loading="lazy" /><span className="ep-line" />
     </div>
   );
 }

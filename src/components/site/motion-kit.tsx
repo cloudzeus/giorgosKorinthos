@@ -159,7 +159,7 @@ export function HeaderShell({ logo, items, book, locale, labels, overHero, media
           {langs}
           <Link className="mr-btn" href={book.href}>{book.label}</Link>
           <button type="button" className="ep-burger" aria-haspopup="dialog" onClick={open}>
-            <span>{labels.menu}</span><i aria-hidden="true" />
+            <span>{labels.menu}</span><span className="ep-line" aria-hidden="true" />
             <span className="mr-sr">{labels.menu}</span>
           </button>
         </div>
@@ -169,7 +169,7 @@ export function HeaderShell({ logo, items, book, locale, labels, overHero, media
           <div className="ep-bar">
             <Link className="ep-logo" href={`/${locale}`} aria-label={`Ephyria Lux, ${labels.home}`}>{logo}</Link>
             <button type="button" className="ep-burger" onClick={() => dialog.current?.close()}>
-              <span style={{ display: "inline" }}>{labels.close}</span><i aria-hidden="true" />
+              <span style={{ display: "inline" }}>{labels.close}</span><span className="ep-line" aria-hidden="true" />
             </button>
           </div>
           <div className="ep-overlay__grid">
