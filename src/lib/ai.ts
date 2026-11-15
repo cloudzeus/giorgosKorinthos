@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { db } from "./db";
 import { locales } from "./i18n";
-import { getSettings } from "./settings";
+import { AI_MODELS, getSettings } from "./settings";
 
 /** Subjects the generator rotates through. When all are used, it asks the model for a fresh angle. */
 export const TOPICS = [
@@ -50,9 +50,15 @@ Rules:
 Reply with one JSON object and nothing else:
 {"slug":"...","el":{"title","excerpt","body","metaTitle","metaDescription"},"en":{...},"de":{...}}`;
 
-export async function aiConfigured() {
+/** OpenRouter endpoint, key and model. The address is fixed; the model is one of the DeepSeek V4 choices. */
+export async function aiConfig() {
   const s = await getSettings();
-  return Boolean(s.AI_API_KEY && s.AI_MODEL);
+  const model = AI_MODELS.find((option) => option.value === s.AI_MODEL)?.value ?? AI_MODELS[0].value;
+  return { key: s.AI_API_KEY, model, url: (process.env.AI_BASE_URL || "https://openrouter.ai/api/v1").replace(/\/$/, ""), publish: s.AI_AUTO_PUBLISH === "true" };
+}
+
+export async function aiConfigured() {
+  return Boolean((await aiConfig()).key);
 }
 
 /** Pull the first JSON object out of a model reply (some models wrap it in a code fence). */
@@ -73,13 +79,13 @@ async function nextTopic(): Promise<string> {
 
 /** Generate one article in all three languages and store it. Returns the article id. */
 export async function generateArticle(topic?: string): Promise<string> {
-  const settings = await getSettings();
-  if (!settings.AI_API_KEY || !settings.AI_MODEL) throw new Error("Λείπει το API key ή το μοντέλο του OpenRouter (Ρυθμίσεις)");
+  const ai = await aiConfig();
+  if (!ai.key) throw new Error("Λείπει το API key του OpenRouter (Ρυθμίσεις)");
   const subject = topic?.trim() || (await nextTopic());
-  const model = settings.AI_MODEL;
-  const res = await fetch(`${(settings.AI_BASE_URL || "https://openrouter.ai/api/v1").replace(/\/$/, "")}/chat/completions`, {
+  const model = ai.model;
+  const res = await fetch(`${ai.url}/chat/completions`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${settings.AI_API_KEY}`, "Content-Type": "application/json" },
+    headers: { Authorization: `Bearer ${ai.key}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model,
       temperature: 0.7,
@@ -94,7 +100,7 @@ export async function generateArticle(topic?: string): Promise<string> {
 
   // Keep slugs unique without failing the run.
   const taken = await db.article.count({ where: { slug: { startsWith: article.slug } } });
-  const publish = settings.AI_AUTO_PUBLISH === "true";
+  const publish = ai.publish;
   const created = await db.article.create({
     data: {
       slug: taken ? `${article.slug}-${taken + 1}` : article.slug,

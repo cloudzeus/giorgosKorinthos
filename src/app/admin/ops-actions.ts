@@ -10,7 +10,11 @@ import { db } from "@/lib/db";
 import { addDays, dayString, nightsBetween, parseDay, rescheduleReservation, UnitsTakenError } from "@/lib/booking";
 import { sendBookingEmail } from "@/lib/email";
 import { baseDict, flatten, locales } from "@/lib/i18n";
-import { FIELDS, saveSettings } from "@/lib/settings";
+import { AI_MODELS, FIELDS, getSettings, saveSettings } from "@/lib/settings";
+import { aiConfig } from "@/lib/ai";
+import { sendMail } from "@/lib/mail";
+import { vivaCheck } from "@/lib/viva";
+import { storageHost } from "@/lib/bunny";
 
 const euros = (value: FormDataEntryValue | null) => Math.round(Number(String(value ?? "").replace(",", ".")) * 100);
 const text = (value: FormDataEntryValue | null, max = 2000) => String(value ?? "").trim().slice(0, max);
@@ -259,4 +263,46 @@ export async function deleteExtra(id: string) {
   await db.extra.delete({ where: { id } }); // past reservations keep their snapshot of the name and amount
   await audit(user.id, "extra.delete", "Extra", id);
   revalidatePath("/", "layout");
+}
+
+// ── Connection tests ──────────────────────────────────────────
+const refused = (status: number) => status === 401 || status === 403 ? "Το κλειδί δεν έγινε δεκτό. Ελέγξτε ότι το αντιγράψατε ολόκληρο." : status === 404 ? "Δεν βρέθηκε. Ελέγξτε το όνομα και την περιοχή." : `Η υπηρεσία απάντησε με σφάλμα ${status}.`;
+
+/** Try the saved credentials of one integration against the real service. Nothing is charged or published. */
+export async function testConnection(group: string): Promise<{ ok: boolean; message: string }> {
+  await requirePermission("settings.write");
+  const s = await getSettings();
+  const signal = () => AbortSignal.timeout(15_000);
+  try {
+    if (group === "Bunny CDN") {
+      if (!s.BUNNY_STORAGE_ZONE || !s.BUNNY_STORAGE_KEY) return { ok: false, message: "Συμπληρώστε και αποθηκεύστε πρώτα το όνομα και τον κωδικό του storage zone." };
+      const res = await fetch(`https://${storageHost(s.BUNNY_STORAGE_HOST)}/${s.BUNNY_STORAGE_ZONE}/`, { headers: { AccessKey: s.BUNNY_STORAGE_KEY, Accept: "application/json" }, cache: "no-store", signal: signal() });
+      if (!res.ok) return { ok: false, message: res.status === 401 ? "Το storage δεν δέχτηκε τον κωδικό. Ελέγξτε τον κωδικό (Password) του storage zone και ότι διαλέξατε τη σωστή περιοχή storage." : refused(res.status) };
+      return { ok: true, message: s.BUNNY_CDN_URL ? "Η σύνδεση με το storage δουλεύει. Μπορείτε να ανεβάσετε αρχεία." : "Η σύνδεση με το storage δουλεύει. Λείπει ακόμη η διεύθυνση Pull Zone." };
+    }
+    if (group === "Mailgun") {
+      if (!s.MAILGUN_API_KEY || !s.MAILGUN_DOMAIN) return { ok: false, message: "Συμπληρώστε και αποθηκεύστε πρώτα το API key και το domain." };
+      const res = await fetch(`${s.MAILGUN_BASE_URL || "https://api.eu.mailgun.net"}/v3/domains/${encodeURIComponent(s.MAILGUN_DOMAIN)}`, { headers: { Authorization: `Basic ${Buffer.from(`api:${s.MAILGUN_API_KEY}`).toString("base64")}` }, cache: "no-store", signal: signal() });
+      if (!res.ok) return { ok: false, message: res.status === 404 ? "Το domain δεν βρέθηκε σε αυτή την περιοχή. Δοκιμάστε την άλλη περιοχή λογαριασμού." : refused(res.status) };
+      if (!s.MAIL_NOTIFY) return { ok: true, message: "Το κλειδί και το domain είναι σωστά. Ορίστε «Email για ειδοποιήσεις» για να σταλεί και δοκιμαστικό μήνυμα." };
+      const sent = await sendMail(s.MAIL_NOTIFY, "Ephyria Lux: δοκιμή σύνδεσης", "Αυτό είναι δοκιμαστικό μήνυμα από τις Ρυθμίσεις του διαχειριστικού. Αν το βλέπετε, η αποστολή email δουλεύει.");
+      return sent ? { ok: true, message: `Στάλθηκε δοκιμαστικό μήνυμα στο ${s.MAIL_NOTIFY}. Ελέγξτε τα εισερχόμενα.` } : { ok: false, message: "Το κλειδί είναι σωστό, αλλά το μήνυμα δεν έφυγε. Ελέγξτε τον αποστολέα και ότι το domain είναι επαληθευμένο στη Mailgun." };
+    }
+    if (group === "Viva Payments") {
+      if (!s.VIVA_CLIENT_ID || !s.VIVA_CLIENT_SECRET) return { ok: false, message: "Συμπληρώστε και αποθηκεύστε πρώτα το Client ID και το Client secret." };
+      const env = await vivaCheck().catch(() => null);
+      if (!env) return { ok: false, message: "Η Viva δεν δέχτηκε το Client ID ή το Client secret. Ελέγξτε ότι ταιριάζουν με το περιβάλλον που διαλέξατε." };
+      return { ok: true, message: `${env === "production" ? "Σύνδεση με πραγματικές χρεώσεις" : "Σύνδεση με το δοκιμαστικό περιβάλλον"}: τα στοιχεία έγιναν δεκτά.${s.VIVA_SOURCE_CODE ? "" : " Λείπει ακόμη ο κωδικός πηγής πληρωμής."}` };
+    }
+    if (group === "OpenRouter (AI)") {
+      const ai = await aiConfig();
+      if (!ai.key) return { ok: false, message: "Συμπληρώστε και αποθηκεύστε πρώτα το API key." };
+      const res = await fetch(`${ai.url}/chat/completions`, { method: "POST", headers: { Authorization: `Bearer ${ai.key}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: ai.model, max_tokens: 8, messages: [{ role: "user", content: "Reply with the single word OK." }] }), signal: signal() });
+      if (!res.ok) return { ok: false, message: res.status === 402 ? "Το κλειδί είναι σωστό, αλλά ο λογαριασμός δεν έχει υπόλοιπο. Προσθέστε credits στο OpenRouter." : refused(res.status) };
+      return { ok: true, message: `Το μοντέλο ${AI_MODELS.find((option) => option.value === ai.model)?.label ?? ai.model} απάντησε. Η συγγραφή άρθρων είναι έτοιμη.` };
+    }
+    return { ok: false, message: "Άγνωστη σύνδεση." };
+  } catch {
+    return { ok: false, message: "Η υπηρεσία δεν απάντησε. Ελέγξτε τη σύνδεση στο internet και δοκιμάστε ξανά." };
+  }
 }

@@ -3,7 +3,7 @@
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MoreHorizontal } from "lucide-react";
+import { CircleCheck, CircleX, MoreHorizontal, PlugZap } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/dg/button";
@@ -72,5 +72,21 @@ export function NavLink({ href, children, exact }: { href: string; children: Rea
     <Link href={href} aria-current={active ? "page" : undefined} className={cn("ad-nav__link", active && "is-active")}>
       {children}
     </Link>
+  );
+}
+
+/** Tries one integration with its saved values and shows the answer next to the button. */
+export function TestButton({ group, action }: { group: string; action: (group: string) => Promise<{ ok: boolean; message: string }> }) {
+  const [pending, start] = useTransition();
+  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
+  return (
+    <div className="ad-test">
+      <Button type="button" variant="secondary" disabled={pending} onClick={() => start(async () => setResult(await action(group)))}>
+        <PlugZap size={16} strokeWidth={1.5} aria-hidden="true" />{pending ? "Γίνεται δοκιμή…" : "Δοκιμή σύνδεσης"}
+      </Button>
+      <p className={cn("ad-test__result", result && (result.ok ? "is-ok" : "is-bad"))} role="status">
+        {result ? <>{result.ok ? <CircleCheck size={18} strokeWidth={1.5} aria-hidden="true" /> : <CircleX size={18} strokeWidth={1.5} aria-hidden="true" />}{result.message}</> : "Δοκιμάζει τις αποθηκευμένες τιμές. Αν αλλάξατε κάτι, πατήστε πρώτα «Αποθήκευση ρυθμίσεων»."}
+      </p>
+    </div>
   );
 }

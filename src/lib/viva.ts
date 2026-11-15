@@ -40,6 +40,13 @@ async function accessToken(): Promise<string> {
   return cached.token;
 }
 
+/** Ask Viva for a fresh token with the saved credentials. Throws when they are refused. */
+export async function vivaCheck(): Promise<"demo" | "production"> {
+  cached = null;
+  await accessToken();
+  return (await config()).VIVA_ENV === "production" ? "production" : "demo";
+}
+
 export interface OrderInput {
   amountCents: number;
   reference: string; // our reservation code

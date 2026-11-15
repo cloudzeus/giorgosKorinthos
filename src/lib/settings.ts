@@ -3,17 +3,23 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { db } from "./db";
 
+/** The article writer always runs on DeepSeek V4. The first entry is the default. */
+export const AI_MODELS = [
+  { value: "deepseek/deepseek-v4-pro", label: "DeepSeek V4 Pro (καλύτερα κείμενα)" },
+  { value: "deepseek/deepseek-v4-flash", label: "DeepSeek V4 Flash (πιο γρήγορο και φθηνό)" },
+] as const;
+
 export const SETTINGS = [
   { group: "Bunny CDN", hint: "Αποθήκευση και διανομή φωτογραφιών και βίντεο.", fields: [
     { key: "BUNNY_STORAGE_ZONE", label: "Όνομα storage zone" },
     { key: "BUNNY_STORAGE_KEY", label: "Κωδικός storage zone (Password)", secret: true },
-    { key: "BUNNY_STORAGE_HOST", label: "Διακομιστής storage", placeholder: "storage.bunnycdn.com" },
+    { key: "BUNNY_STORAGE_HOST", label: "Περιοχή storage", options: [{ value: "storage.bunnycdn.com", label: "Ευρώπη, Φρανκφούρτη (προεπιλογή)" }, { value: "uk.storage.bunnycdn.com", label: "Ηνωμένο Βασίλειο, Λονδίνο" }, { value: "se.storage.bunnycdn.com", label: "Σουηδία, Στοκχόλμη" }, { value: "ny.storage.bunnycdn.com", label: "ΗΠΑ, Νέα Υόρκη" }, { value: "la.storage.bunnycdn.com", label: "ΗΠΑ, Λος Άντζελες" }, { value: "sg.storage.bunnycdn.com", label: "Σιγκαπούρη" }, { value: "syd.storage.bunnycdn.com", label: "Αυστραλία, Σίδνεϊ" }] },
     { key: "BUNNY_CDN_URL", label: "Διεύθυνση Pull Zone", placeholder: "https://ephyria.b-cdn.net" },
   ] },
   { group: "Mailgun", hint: "Αποστολή email επιβεβαίωσης κράτησης και ειδοποιήσεων.", fields: [
     { key: "MAILGUN_API_KEY", label: "API key", secret: true },
     { key: "MAILGUN_DOMAIN", label: "Domain αποστολής", placeholder: "mg.example.com" },
-    { key: "MAILGUN_BASE_URL", label: "Περιοχή API", placeholder: "https://api.eu.mailgun.net" },
+    { key: "MAILGUN_BASE_URL", label: "Περιοχή λογαριασμού", options: [{ value: "https://api.eu.mailgun.net", label: "Ευρώπη (EU)" }, { value: "https://api.mailgun.net", label: "ΗΠΑ (US)" }] },
     { key: "MAIL_FROM", label: "Αποστολέας", placeholder: "Ephyria Lux <reservations@example.com>" },
     { key: "MAIL_NOTIFY", label: "Email για ειδοποιήσεις προς εσάς" },
   ] },
@@ -27,8 +33,7 @@ export const SETTINGS = [
   ] },
   { group: "OpenRouter (AI)", hint: "Αυτόματη συγγραφή άρθρων για την Κόρινθο στις τρεις γλώσσες.", fields: [
     { key: "AI_API_KEY", label: "API key", secret: true },
-    { key: "AI_MODEL", label: "Μοντέλο", placeholder: "anthropic/claude-sonnet-5.5" },
-    { key: "AI_BASE_URL", label: "Διεύθυνση API", placeholder: "https://openrouter.ai/api/v1" },
+    { key: "AI_MODEL", label: "Μοντέλο", options: AI_MODELS },
     { key: "AI_AUTO_PUBLISH", label: "Νέα άρθρα", options: [{ value: "false", label: "Μένουν πρόχειρα μέχρι να τα εγκρίνω" }, { value: "true", label: "Δημοσιεύονται αμέσως" }] },
   ] },
   { group: "Google", hint: "Μετρήσεις επισκεψιμότητας και διαφημίσεων. Φορτώνουν μόνο αφού ο επισκέπτης δεχτεί τα cookies.", fields: [

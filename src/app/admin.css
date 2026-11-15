@@ -194,3 +194,11 @@
 .ad-picks label:has(input:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .ad-extra { display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: center; }
 .ad-extra img, .ad-extra > span { width: 64px; height: 48px; border-radius: 4px; object-fit: cover; background: var(--surface-alt); display: block; }
+
+/* Connection test */
+.ad-test { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding-top: 16px; border-top: 1px solid var(--border-subtle); }
+.ad-test__result { flex: 1 1 260px; display: flex; gap: 8px; align-items: flex-start; margin: 0; font-size: var(--fs-14); color: var(--text-muted); }
+.ad-test__result svg { flex: none; margin-top: 2px; }
+.ad-test__result.is-ok { color: var(--positive); font-weight: 500; }
+.ad-test__result.is-bad { color: var(--danger); font-weight: 500; }
+.ad-settings__grid .ad-field { align-content: start; }

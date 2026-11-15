@@ -2,9 +2,12 @@
 // Files are written to  https://{host}/{zone}/{path}  with the storage zone password as AccessKey.
 import { getSettings } from "./settings";
 
+/** Only a real Bunny storage host is used; anything else (an old free-text value) falls back to the main region. */
+export const storageHost = (value: string) => (/^([a-z]{2,3}\.)?storage\.bunnycdn\.com$/.test(value) ? value : "storage.bunnycdn.com");
+
 async function config() {
   const s = await getSettings();
-  return { zone: s.BUNNY_STORAGE_ZONE, key: s.BUNNY_STORAGE_KEY, host: s.BUNNY_STORAGE_HOST || "storage.bunnycdn.com", cdn: s.BUNNY_CDN_URL.replace(/\/$/, "") };
+  return { zone: s.BUNNY_STORAGE_ZONE, key: s.BUNNY_STORAGE_KEY, host: storageHost(s.BUNNY_STORAGE_HOST), cdn: s.BUNNY_CDN_URL.replace(/\/$/, "") };
 }
 
 export async function bunnyConfigured() {
