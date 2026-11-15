@@ -723,3 +723,6 @@ div.ep-consent__row { cursor: default; }
 .ep-consent__foot .mr-btn { min-height: 44px; }
 @media (max-width: 560px) { .ep-consent { padding: var(--space-6); } .ep-consent__foot .mr-btn { flex: 1 1 100%; } }
 @media (prefers-reduced-motion: reduce) { .ep-consent__row input, .ep-consent__row input::after { transition: none; } }
+
+/* Accent words on dark surfaces use the light gold; the dark gold is for ivory surfaces only. Kept last so it wins. */
+.ep-arch em, .ep-scene em, .ep-hero em, .ep-cta em, .ep-section--inverse em, .ep-footer em, .bk-folio em { color: #E7D9BF; }
