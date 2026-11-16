@@ -9,6 +9,10 @@ import { sendAckEmail } from "@/lib/email";
 import { contact as info, img } from "@/lib/site";
 import { ImageMaskReveal } from "@/components/ds/ImageMaskReveal";
 import { PageIntro } from "@/components/site/parts";
+import ConciergePanel from "@/components/site/ConciergePanel";
+
+const CONCIERGE_URL = process.env.NEXT_PUBLIC_CONCIERGE_URL ?? "https://video.ephyria.gr";
+const CONCIERGE_COMPANY_ID = process.env.NEXT_PUBLIC_CONCIERGE_COMPANY_ID ?? "";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/contact">): Promise<Metadata> {
   const { locale, t } = await getDict((await params).locale);
@@ -47,6 +51,22 @@ export default async function ContactPage({ params, searchParams }: PageProps<"/
   return (
     <>
       <PageIntro eyebrow={c.eyebrow} lines={c.lines} lead={c.lead} />
+      {CONCIERGE_COMPANY_ID ? (
+        <section className="ep-container ep-stack" style={{ paddingBottom: "var(--section)" }}>
+          <div className="ep-stack">
+            <p className="mr-eyebrow">{c.concierge.eyebrow}</p>
+            <h2 className="ep-display">{c.concierge.title}</h2>
+            <p className="mr-lead mr-muted">{c.concierge.lead}</p>
+          </div>
+          <ConciergePanel
+            strings={c.concierge}
+            conciergeUrl={CONCIERGE_URL}
+            companyId={CONCIERGE_COMPANY_ID}
+            hotelName="Ephyria Lux"
+            locale={locale}
+          />
+        </section>
+      ) : null}
       <section className="ep-container ep-book" style={{ paddingBottom: "var(--section)" }}>
         <form className="ep-form" action={send}>
           <input type="hidden" name="locale" value={locale} />
