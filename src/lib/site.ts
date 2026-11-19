@@ -2,6 +2,9 @@ import type { Dict } from "./i18n";
 
 export const contact = { phone: "+30 694 656 4148", phoneHref: "tel:+306946564148", email: "worldwide.act2020@gmail.com" };
 
+/** Video concierge (the hotelVideo app). Build-time values: without a company id every concierge entry point stays hidden. */
+export const concierge = { url: process.env.NEXT_PUBLIC_CONCIERGE_URL ?? "https://video.ephyria.gr", companyId: process.env.NEXT_PUBLIC_CONCIERGE_COMPANY_ID ?? "" };
+
 /** The villa in Examilia (approximate, for the schematic map and directions links). */
 export const villa = { lat: 37.896, lng: 22.928 };
 

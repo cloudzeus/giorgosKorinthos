@@ -10,7 +10,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     db.unit.findMany({ where: { active: true }, select: { slug: true } }),
     db.article.findMany({ where: { status: "PUBLISHED" }, select: { slug: true, publishedAt: true } }),
   ]);
-  const paths = ["", "/villa", "/accommodation", "/experiences", "/explore-corinth", "/gallery", "/contact",
+  const paths = ["", "/villa", "/accommodation", "/experiences", "/explore-corinth", "/gallery", "/contact", ...(process.env.NEXT_PUBLIC_CONCIERGE_COMPANY_ID ? ["/concierge"] : []),
     ...units.map((unit) => `/accommodation/${unit.slug}`), ...articles.map((article) => `/explore-corinth/${article.slug}`)];
   return paths.flatMap((path) =>
     locales.map((locale) => ({

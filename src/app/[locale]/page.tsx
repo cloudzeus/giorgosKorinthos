@@ -1,3 +1,4 @@
+import ConciergeLink from "@/components/site/ConciergeLink";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { getDict, longDate } from "@/lib/i18n";
@@ -194,6 +195,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
           <p className="mr-lead">{t.reserve.text}</p>
           <MagneticButton strength={0.4} max={24}><Link className="ep-round" href={`${base}/booking`}>{t.reserve.cta}</Link></MagneticButton>
           <p className="mr-body"><a href={contact.phoneHref} style={{ color: "inherit" }}>{contact.phone}</a></p>
+          <ConciergeLink className="mr-btn mr-btn--inverse" href={`${base}/concierge`} label={t.contact.concierge.cta} onlineLabel={t.contact.concierge.presenceOnline} />
         </div>
       </ParallaxCover>
 

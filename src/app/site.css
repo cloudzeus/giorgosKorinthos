@@ -733,3 +733,28 @@ div.ep-consent__row { cursor: default; }
 .ep-espa:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
 body:has(.ep-espa) .ep-footer { padding-bottom: 64px; }
 @media print { .ep-espa { display: none; } }
+
+/* Video concierge: entry button, availability calendar and time slots. Reuses the booking calendar (.bk-cal, .bk-days) and folio. */
+.cc-link svg { width: 18px; height: 18px; flex: none; }
+.cc-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: 0.4; }
+.cc-dot[data-on] { background: #2F8A45; opacity: 1; }
+.mr-btn:not(.mr-btn--secondary):not(.mr-btn--link):not(.mr-btn--inverse):not(:hover) .cc-dot[data-on], .cc-folio .cc-dot[data-on], .ep-cta .cc-dot[data-on] { background: #8FD79B; }
+.cc-when { display: grid; gap: var(--space-8); }
+@media (min-width: 760px) { .cc-when { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-12); } }
+.bk-days .cc-wait { color: #A9A596; cursor: progress; }
+.bk-days .cc-free::after { content: ""; position: absolute; left: 50%; bottom: 6px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--action); }
+.bk-days .is-start.cc-free::after { background: var(--on-action); }
+.cc-times h3 { margin: 0 0 var(--space-4); min-height: 44px; display: flex; align-items: center; font-family: var(--font-display); font-weight: 400; font-size: var(--fs-20); }
+.cc-times .bk-hint { margin: 0; }
+.cc-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: var(--space-2); }
+.cc-slots button { height: 48px; padding: 0; border: 1px solid var(--border-control); border-radius: 999px; background: none; color: var(--text); font: inherit; font-size: var(--fs-16); font-variant-numeric: tabular-nums; cursor: pointer; transition: background-color 0.2s ease-out, border-color 0.2s ease-out, color 0.2s ease-out; }
+.cc-slots button:hover { background: var(--surface-alt); }
+.cc-slots button[aria-pressed="true"] { background: var(--action); border-color: var(--action); color: var(--on-action); }
+.cc-slots button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.cc-folio .bk-folio__body { padding-top: var(--space-6); }
+.cc-presence { display: flex; align-items: center; gap: var(--space-2); margin: 0; font-size: var(--fs-14); }
+.cc-folio__h { margin: 0 0 var(--space-3); font: inherit; font-size: var(--fs-12); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-inverse-muted); }
+.cc-next { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; font-size: var(--fs-14); line-height: 1.5; }
+.cc-next li { display: grid; grid-template-columns: 24px 1fr; gap: var(--space-2); align-items: baseline; }
+.cc-next b { font-family: var(--font-display); font-weight: 400; font-size: var(--fs-18); color: var(--champagne); }
+@media (prefers-reduced-motion: reduce) { .cc-slots button { transition: none; } }

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Manrope, Noto_Serif_Display } from "next/font/google";
 import "../globals.css";
 import { alternates, getDict } from "@/lib/i18n";
-import { contact, img } from "@/lib/site";
+import { concierge, contact, img } from "@/lib/site";
 import { LogoFull, LogoHorizontal, LogoMark, LogoWordmark } from "@/components/site/Logo";
 import { HeaderShell, MotionToggle, Providers, RouteTransition } from "@/components/site/motion-kit";
 import { Botanical, Cursor } from "@/components/site/fx";
@@ -80,6 +80,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                     {items.slice(3).map((item) => <li key={item.href}><Link href={item.href}>{item.label}</Link></li>)}
                     <li><Link href={`${base}/booking`}>{t.nav.book}</Link></li>
                     <li><Link href={`${base}/stay`}>{t.stay.eyebrow}</Link></li>
+                    {concierge.companyId ? <li><Link href={`${base}/concierge`}>{t.contact.concierge.eyebrow}</Link></li> : null}
                   </ul>
                 </nav>
                 <div>
