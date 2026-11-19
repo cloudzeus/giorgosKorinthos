@@ -6,7 +6,7 @@ import { X } from "lucide-react";
 import { concierge } from "@/lib/site";
 
 // Site palette handed to the hotelVideo room, so the call looks like part of this site.
-const THEME = { primary: "#343F35", bg: "#F6F3ED", card: "#FAF8F5", text: "#262824", line: "#E5DDD0", stage: "#262824" };
+const THEME = { primary: "#343F35", bg: "#F6F3ED", card: "#FAF8F5", text: "#262824", muted: "#555C50", line: "#E5DDD0" };
 
 /** The video call of a confirmed meeting, in a modal over the concierge page. The room itself is the hotelVideo app in an iframe. */
 export default function ConciergeCall({ room, title, closeLabel, hotelName, backHref }: { room: string; title: string; closeLabel: string; hotelName: string; backHref: string }) {
