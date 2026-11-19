@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CalendarCheck, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, Video } from "lucide-react";
+import { CalendarCheck, ChevronLeft, ChevronRight, CircleAlert, CircleCheck } from "lucide-react";
 import type { Dict } from "@/lib/i18n";
 import { concierge } from "@/lib/site";
 import { usePresence } from "./ConciergeLink";
@@ -94,20 +94,6 @@ export default function ConciergePanel({ strings: s, labels, hotelName, locale, 
     } catch {
       fail(s.error);
     }
-  }
-
-  async function callNow() {
-    // Best-effort staff signal, then open the always-on reception room.
-    try {
-      await fetch(`${url}/api/public/concierge-call`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ companyId, guest: form.name.trim() ? { firstName: form.name.trim() } : undefined }),
-      });
-    } catch {
-      /* non-blocking */
-    }
-    window.open(`${url}/room/reception?name=${encodeURIComponent(hotelName)}&companyId=${encodeURIComponent(companyId)}`, "_blank", "noopener,noreferrer");
   }
 
   const reset = () => { setState("idle"); setDay(""); setSlot(""); setForm(EMPTY); };
@@ -216,8 +202,6 @@ export default function ConciergePanel({ strings: s, labels, hotelName, locale, 
             <h3 className="cc-folio__h">{s.nextTitle}</h3>
             <ol className="cc-next">{s.next.map((step, i) => <li key={step}><b>{i + 1}</b><span>{step}</span></li>)}</ol>
           </div>
-          <button className="bk-cta" type="button" onClick={callNow}><Video aria-hidden="true" strokeWidth={1.5} />{s.callNow}</button>
-          <p className="bk-folio__none">{s.callNowHint}</p>
         </div>
       </aside>
     </div>
