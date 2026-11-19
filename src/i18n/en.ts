@@ -149,7 +149,7 @@ const en = {
       eyebrow: "Video concierge", title: "Meet us by video", lead: "Request a video meeting with our concierge — before, during or after your stay. Pick a time and we will confirm by email with a join link.",
       presenceOnline: "A concierge is online now", presenceOffline: "No concierge online right now", presenceChecking: "Checking availability…",
       formTitle: "Request a video meeting",
-      name: "Full name", email: "Email", phone: "Phone (optional)", date: "Preferred date & time", timing: "When",
+      name: "Full name", email: "Email", phone: "Phone (optional)", date: "Preferred day", pickSlot: "Pick a time", slotsLoading: "Loading available times…", noSlots: "No available times on this day.", timing: "When",
       timingBefore: "Before my stay", timingDuring: "During my stay", timingAfter: "After my stay",
       message: "Message (optional)", submit: "Request meeting", submitting: "Sending…",
       sent: "Thank you. We received your request and will confirm by email with a join link.",

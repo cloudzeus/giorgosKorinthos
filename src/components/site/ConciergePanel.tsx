@@ -18,6 +18,9 @@ export type ConciergeStrings = {
   email: string;
   phone: string;
   date: string;
+  pickSlot: string;
+  slotsLoading: string;
+  noSlots: string;
   timing: string;
   timingBefore: string;
   timingDuring: string;
@@ -45,9 +48,30 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ConciergePanel({ strings: s, conciergeUrl, companyId, hotelName, locale }: Props) {
   const [online, setOnline] = useState<boolean | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", date: "", timing: "DURING", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", day: "", slot: "", timing: "DURING", message: "" });
+  const [slots, setSlots] = useState<string[] | null>(null);
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+
+  const fmtSlot = (iso: string) =>
+    new Intl.DateTimeFormat(locale || "el", { timeZone: "Europe/Athens", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(iso));
+
+  // Load free 30-min slots whenever the chosen day changes.
+  useEffect(() => {
+    if (!form.day || !companyId) {
+      setSlots(null);
+      return;
+    }
+    let alive = true;
+    setSlots(null);
+    fetch(`${conciergeUrl}/api/public/availability?companyId=${encodeURIComponent(companyId)}&date=${form.day}`, { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => alive && setSlots(Array.isArray(d.slots) ? d.slots : []))
+      .catch(() => alive && setSlots([]));
+    return () => {
+      alive = false;
+    };
+  }, [form.day, companyId, conciergeUrl]);
 
   // Poll operator presence every 30s.
   useEffect(() => {
@@ -74,7 +98,7 @@ export default function ConciergePanel({ strings: s, conciergeUrl, companyId, ho
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const name = form.name.trim();
-    if (name.length < 2 || !form.date) {
+    if (name.length < 2 || !form.slot) {
       setState("error");
       setErrorMsg(s.requiredError);
       return;
@@ -94,7 +118,7 @@ export default function ConciergePanel({ strings: s, conciergeUrl, companyId, ho
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           companyId,
-          scheduledAt: new Date(form.date).toISOString(),
+          scheduledAt: form.slot, // already a UTC ISO slot start from the availability endpoint
           timing: form.timing,
           locale,
           guest: { firstName, lastName, email: form.email.trim(), phone: form.phone.trim() || null },
@@ -103,7 +127,7 @@ export default function ConciergePanel({ strings: s, conciergeUrl, companyId, ho
       });
       if (!r.ok) throw new Error(String(r.status));
       setState("sent");
-      setForm({ name: "", email: "", phone: "", date: "", timing: "DURING", message: "" });
+      setForm({ name: "", email: "", phone: "", day: "", slot: "", timing: "DURING", message: "" });
     } catch {
       setState("error");
       setErrorMsg(s.error);
@@ -169,10 +193,36 @@ export default function ConciergePanel({ strings: s, conciergeUrl, companyId, ho
           </div>
           <div className="mr-field">
             <label className="mr-label" htmlFor="cc-date">{s.date} *</label>
-            <input className="mr-input" id="cc-date" type="datetime-local" value={form.date}
-              onChange={(e) => setForm({ ...form, date: e.target.value })} required />
+            <input className="mr-input" id="cc-date" type="date" value={form.day}
+              min={new Date().toISOString().slice(0, 10)}
+              onChange={(e) => setForm({ ...form, day: e.target.value, slot: "" })} required />
           </div>
         </div>
+        {form.day ? (
+          <div className="mr-field">
+            <label className="mr-label">{s.pickSlot} *</label>
+            {slots === null ? (
+              <p className="ep-note" style={{ marginTop: 0 }}>{s.slotsLoading}</p>
+            ) : slots.length === 0 ? (
+              <p className="ep-note" style={{ marginTop: 0 }}>{s.noSlots}</p>
+            ) : (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                {slots.map((iso) => (
+                  <button
+                    key={iso}
+                    type="button"
+                    className="mr-btn mr-btn--secondary"
+                    aria-pressed={form.slot === iso}
+                    onClick={() => setForm({ ...form, slot: iso })}
+                    style={form.slot === iso ? { outline: "2px solid var(--brand, #0078D4)", outlineOffset: 2 } : undefined}
+                  >
+                    {fmtSlot(iso)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : null}
         <div className="mr-field">
           <label className="mr-label" htmlFor="cc-timing">{s.timing}</label>
           <select className="mr-input" id="cc-timing" value={form.timing}

@@ -149,7 +149,7 @@ const de: typeof en = {
       eyebrow: "Video-Concierge", title: "Lernen Sie uns per Video kennen", lead: "Bitten Sie um ein Videogespräch mit unserem Concierge — vor, während oder nach Ihrem Aufenthalt. Wählen Sie eine Zeit, wir bestätigen per E-Mail mit einem Beitrittslink.",
       presenceOnline: "Ein Concierge ist jetzt online", presenceOffline: "Derzeit ist kein Concierge online", presenceChecking: "Verfügbarkeit wird geprüft…",
       formTitle: "Videogespräch anfragen",
-      name: "Vor- und Nachname", email: "E-Mail", phone: "Telefon (optional)", date: "Bevorzugter Tag & Uhrzeit", timing: "Wann",
+      name: "Vor- und Nachname", email: "E-Mail", phone: "Telefon (optional)", date: "Bevorzugter Tag", pickSlot: "Uhrzeit wählen", slotsLoading: "Verfügbare Zeiten werden geladen…", noSlots: "Keine verfügbaren Zeiten an diesem Tag.", timing: "Wann",
       timingBefore: "Vor meinem Aufenthalt", timingDuring: "Während meines Aufenthalts", timingAfter: "Nach meinem Aufenthalt",
       message: "Nachricht (optional)", submit: "Gespräch anfragen", submitting: "Senden…",
       sent: "Vielen Dank. Wir haben Ihre Anfrage erhalten und bestätigen per E-Mail mit einem Beitrittslink.",
