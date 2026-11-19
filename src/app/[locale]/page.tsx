@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { getDict, longDate } from "@/lib/i18n";
-import { contact, img, placeImg, places } from "@/lib/site";
+import { contact, espa, img, placeImg, places } from "@/lib/site";
 import { slotMap } from "@/lib/media";
 import { MagneticButton } from "@/components/ds/MagneticButton";
 import { HeroMotion } from "@/components/site/motion-kit";
@@ -11,6 +11,7 @@ import { BookingBar, HeroTitle, PoolImage, VillaBlock } from "@/components/site/
 export default async function Home({ params }: PageProps<"/[locale]">) {
   const { locale, t } = await getDict((await params).locale);
   const base = `/${locale}`;
+  const funding = espa(locale);
   const [media, units, posts] = await Promise.all([
     slotMap(),
     db.unit.findMany({ where: { active: true }, orderBy: { sort: "asc" } }),
@@ -196,6 +197,10 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
         </div>
       </ParallaxCover>
 
+      {/* ESPA publicity: always visible on the home page, opens the project poster */}
+      <a className="ep-espa" href={funding.href} target="_blank" rel="noopener" lang={funding.lang}>
+        <img src={funding.src} alt={funding.alt} width={1200} height={142} />
+      </a>
     </>
   );
 }

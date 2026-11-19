@@ -726,3 +726,10 @@ div.ep-consent__row { cursor: default; }
 
 /* Accent words on dark surfaces use the light gold; the dark gold is for ivory surfaces only. Kept last so it wins. */
 .ep-arch em, .ep-scene em, .ep-hero em, .ep-cta em, .ep-section--inverse em, .ep-footer em, .bk-folio em { color: #E7D9BF; }
+
+/* ESPA publicity banner (home page): fixed to the bottom of the viewport, above the page, below the cookie choice */
+.ep-espa { position: fixed; left: 0; bottom: 0; z-index: 35; width: min(400px, 100vw); padding-bottom: env(safe-area-inset-bottom); background: #fff; box-shadow: 0 0 0 1px var(--border-subtle); }
+.ep-espa img { display: block; width: 100%; height: auto; }
+.ep-espa:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
+body:has(.ep-espa) .ep-footer { padding-bottom: 64px; }
+@media print { .ep-espa { display: none; } }

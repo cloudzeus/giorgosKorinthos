@@ -9,6 +9,18 @@ type AltKey = keyof Dict["alt"];
 /** With NEXT_PUBLIC_CDN_URL set, photographs come from the CDN; without it, from public/images. */
 const CDN = (process.env.NEXT_PUBLIC_CDN_URL ?? "").replace(/\/$/, "");
 export const img = (name: string) => `${CDN}/images/${name}.webp`;
+/** ESPA publicity banner and its A3 poster (PDF). Greek for el, English for every other language. The files live only on the CDN. */
+export const espa = (locale: string) => {
+  const lang = locale === "el" ? "el" : "en";
+  return {
+    lang,
+    src: `${CDN}/images/espa/espa-${lang}.webp`,
+    href: `${CDN}/docs/espa/poster-a3-${lang}.pdf`,
+    alt: lang === "el"
+      ? "Με τη συγχρηματοδότηση της Ευρωπαϊκής Ένωσης. ΕΣΠΑ 2021-2027, Πρόγραμμα Ανταγωνιστικότητα. Αφίσα έργου σε PDF, ανοίγει σε νέο παράθυρο"
+      : "Co-funded by the European Union. ESPA 2021-2027, Programme Competitiveness. Project poster as PDF, opens in a new window",
+  };
+};
 
 /** Every photograph, with its alt key, intrinsic size and gallery category. */
 export const photos: { name: string; alt: AltKey; w: number; h: number; cat: keyof Dict["gallery"]["cats"] }[] = [
